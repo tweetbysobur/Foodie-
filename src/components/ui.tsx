@@ -162,9 +162,9 @@ export function SectionTitle({ children, action, id }: { children: ReactNode; ac
 }
 
 /** Empty states use the Foodie bowl, the one illustration only this brand has. */
-export function Empty({ title, body, action, compact }: { title: string; body: string; action?: ReactNode; compact?: boolean }) {
+export function Empty({ title, body, action, compact, plain }: { title: string; body: string; action?: ReactNode; compact?: boolean; plain?: boolean }) {
   return (
-    <div className={cx("flex flex-col items-center rounded-[var(--radius-card)] bg-surface text-center", compact ? "gap-1 px-5 py-6" : "gap-1.5 px-6 py-9")}>
+    <div className={cx("flex flex-col items-center text-center", !plain && "rounded-[var(--radius-card)] bg-surface", compact ? "gap-1 px-5 py-6" : "gap-1.5 px-6 py-10")}>
       <Image src="/brand/foodie-mark.webp" alt="" width={compact ? 56 : 88} height={compact ? 56 : 88} className="mb-2" />
       <p className="t-card text-ink">{title}</p>
       <p className="t-body max-w-xs text-muted-ink">{body}</p>

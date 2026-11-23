@@ -253,7 +253,7 @@ function Welcome() {
         <Wordmark className="mt-3 text-[40px] leading-none" />
         <p className="t-body mt-2 max-w-[260px] text-[15px] text-muted-ink">Nigerian food from kitchens near you, delivered.</p>
       </div>
-      <section className="mt-9 rounded-[24px] bg-surface p-5 shadow-soft" aria-labelledby="welcome-h">
+      <section className="mt-9 rounded-[24px] bg-surface p-5" aria-labelledby="welcome-h">
         <div role="progressbar" aria-label="Sign up progress" aria-valuemin={1} aria-valuemax={2} aria-valuenow={step} className="mb-4 flex gap-1.5">
           {[1, 2].map((n) => (
             <span key={n} className={cx("h-1.5 flex-1 rounded-full transition-colors duration-300", n <= step ? "bg-green" : "bg-line")} />

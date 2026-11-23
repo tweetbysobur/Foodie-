@@ -16,7 +16,7 @@ export function Summary({
   className?: string;
 }) {
   return (
-    <dl className={cx("flex flex-col gap-2.5 rounded-[var(--radius-card)] bg-surface p-5 shadow-soft", className)}>
+    <dl className={cx("flex flex-col gap-2.5 border-t-2 border-ink/80 pt-4", className)}>
       <div className="t-body flex justify-between gap-4 text-[15px]">
         <dt className="text-muted-ink">Food subtotal</dt>
         <dd className="tabular text-ink">{naira(totals.subtotal)}</dd>
@@ -35,7 +35,7 @@ export function Summary({
       )}
       <div className="mt-1 flex items-baseline justify-between gap-4 border-t border-line pt-3.5">
         <dt className="t-card text-ink">Total</dt>
-        <dd className="t-price text-[20px] text-ink">{naira(totals.total)}</dd>
+        <dd className="text-[28px] font-extrabold leading-none tracking-[-0.02em] tabular-nums text-ink">{naira(totals.total)}</dd>
       </div>
     </dl>
   );

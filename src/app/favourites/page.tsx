@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useStore } from "@/store/app-store";
 import { useCatalog } from "@/store/catalog";
-import { SavedCard } from "@/components/food";
+import { CollectionTile } from "@/components/food";
 import { Empty, ErrorState, PageHeader, Skeleton } from "@/components/ui";
 
 export default function FavouritesPage() {
@@ -22,7 +22,7 @@ export default function FavouritesPage() {
       ) : catalog.state.status === "loading" ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="aspect-[4/6] rounded-[24px]" />
+            <Skeleton key={i} className="aspect-[3/4] rounded-[22px]" />
           ))}
         </div>
       ) : saved.length === 0 ? (
@@ -36,9 +36,12 @@ export default function FavouritesPage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
-          {saved.map((m) => (
-            <SavedCard key={m.id} item={m} />
+        // Masonry: alternating tall and square photos read as a personal collection, not a menu grid.
+        <div className="columns-2 gap-4 md:columns-3 md:gap-6 lg:columns-4">
+          {saved.map((m, i) => (
+            <div key={m.id} className="mb-6 break-inside-avoid">
+              <CollectionTile item={m} tall={i % 3 === 0} />
+            </div>
           ))}
         </div>
       )}

@@ -35,43 +35,45 @@ export function Tracking({ params }: { params: Promise<{ id: string }> }) {
 
   const v = orderStatus(order, now);
   const eta: [number, number] = [order.placedAt + order.etaMinutes[0] * 60000, order.placedAt + order.etaMinutes[1] * 60000];
-  const card = "flex flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-5 shadow-soft";
+  const section = "flex flex-col gap-4 border-t-2 border-ink/80 pt-4";
 
   return (
     <main className="pb-nav flex flex-col gap-6 px-5 pt-[calc(env(safe-area-inset-top)+16px)] md:px-0 md:pt-10">
       <PageHeader title={`Order ${order.reference}`} subtitle={`Placed ${shortDate(order.placedAt)}`} />
 
-      <div className="flex flex-col gap-5 md:grid md:grid-cols-[1.1fr_1fr] md:items-start md:gap-10">
-        <section aria-labelledby="status-h" className={cx("flex flex-col gap-5 rounded-[24px] p-6", v.kind === "cancelled" ? "bg-surface shadow-soft" : "bg-green text-white shadow-float")}>
-          <div>
-            <p className={cx("t-support", v.kind === "cancelled" ? "text-muted-ink" : "text-white/80")}>
+      <div className="flex flex-col gap-8 md:grid md:grid-cols-[1.1fr_1fr] md:items-start md:gap-14">
+        {/* Status first, then the timeline on the page itself */}
+        <div className="flex flex-col gap-7">
+          <section aria-labelledby="status-h" className={cx("flex flex-col gap-3 rounded-[28px] p-6", v.kind === "cancelled" ? "bg-surface" : "bg-green text-white")}>
+            <p className={cx("t-support", v.kind === "cancelled" ? "text-muted-ink" : "text-white/85")}>
               {v.kind === "cancelled" ? `Cancelled ${shortDate(order.cancelledAt!)}` : v.kind === "delivered" ? "Delivered" : "Estimated arrival"}
             </p>
-            <h2 id="status-h" className={cx("t-display tabular", v.kind === "cancelled" ? "text-ink" : "text-white")}>
-              {v.kind === "cancelled" ? "Order cancelled" : v.kind === "delivered" ? "Enjoy your meal" : `${clockTime(eta[0])} - ${clockTime(eta[1])}`}
+            <h2 id="status-h" className={cx("text-[40px] font-extrabold leading-none tracking-[-0.03em] tabular-nums md:text-[52px]", v.kind === "cancelled" ? "text-ink" : "text-white")}>
+              {v.kind === "cancelled" ? "Cancelled" : v.kind === "delivered" ? "Enjoy your meal" : `${clockTime(eta[0])} - ${clockTime(eta[1])}`}
             </h2>
-            {v.kind === "active" && <p className="t-body mt-1 text-white/90">{v.step.detail}</p>}
-          </div>
+            {v.kind === "cancelled" && <p className="t-body text-muted-ink">You cancelled before the vendor confirmed. You were not charged.</p>}
+          </section>
 
           {v.kind !== "cancelled" && (
-            <ol className="flex flex-col rounded-[var(--radius-card)] bg-surface p-4 text-ink" aria-label="Order progress">
+            <ol className="flex flex-col px-1" aria-label="Order progress">
               {STATUS_STEPS.map((step, i) => {
                 const Icon = STEP_ICONS[i];
                 const done = i < v.index || v.kind === "delivered";
                 const current = i === v.index && v.kind === "active";
                 return (
-                  <li key={step.id} aria-current={current ? "step" : undefined} className="relative flex min-h-[54px] items-start gap-3.5">
-                    {i < STATUS_STEPS.length - 1 && <span aria-hidden className={cx("absolute left-[17px] top-9 h-[calc(100%-28px)] w-0.5 rounded-full", done ? "bg-green" : "bg-line")} />}
+                  <li key={step.id} aria-current={current ? "step" : undefined} className="relative flex min-h-[60px] items-start gap-4">
+                    {i < STATUS_STEPS.length - 1 && <span aria-hidden className={cx("absolute left-[17px] top-10 h-[calc(100%-32px)] w-[3px] -translate-x-1/2 rounded-full", done ? "bg-green" : "bg-line")} />}
                     <span
                       className={cx(
                         "relative z-10 grid size-9 shrink-0 place-items-center rounded-full transition-colors",
-                        done ? "bg-green text-white" : current ? "bg-orange-strong text-white ring-4 ring-peach" : "bg-cream text-muted",
+                        done ? "bg-green text-white" : current ? "bg-orange-strong text-white ring-[5px] ring-peach" : "bg-surface text-muted ring-[1.5px] ring-line",
                       )}
                     >
                       {done ? <Check className="size-4" strokeWidth={3} aria-hidden /> : <Icon className="size-4" aria-hidden />}
                     </span>
                     <span className="pt-1.5">
-                      <span className={cx("block text-[15px]", current ? "font-bold text-ink" : done ? "font-semibold text-ink" : "font-medium text-muted-ink")}>{step.label}</span>
+                      <span className={cx("block", current ? "t-card text-[17px] text-ink" : done ? "t-body text-[15px] font-semibold text-ink" : "t-body text-[15px] text-muted-ink")}>{step.label}</span>
+                      {current && <span className="t-support block text-muted-ink">{step.detail}</span>}
                       <span className="sr-only">{done ? "Completed" : current ? "In progress" : "Upcoming"}</span>
                     </span>
                   </li>
@@ -80,28 +82,26 @@ export function Tracking({ params }: { params: Promise<{ id: string }> }) {
             </ol>
           )}
 
-          {v.kind === "cancelled" && <p className="t-body text-muted-ink">You cancelled this order before the vendor confirmed it. You were not charged.</p>}
-
           {v.kind === "active" && !DEMO_TRACKING && (
-            <p className="t-support flex gap-2 text-white/90">
-              <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <p className="t-support flex gap-2 text-muted-ink">
+              <Info className="mt-0.5 size-4 shrink-0 text-green" aria-hidden />
               {VENDORS_CONNECTED ? "Live updates appear here as the vendor and rider progress." : "Live tracking starts once vendors are connected to Foodie. This order stays at its first step until then."}
             </p>
           )}
           {DEMO_TRACKING && v.kind !== "cancelled" && (
-            <p className="t-support flex gap-2 text-white/90">
-              <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <p className="t-support flex gap-2 text-muted-ink">
+              <Info className="mt-0.5 size-4 shrink-0 text-green" aria-hidden />
               Demo mode: status moves on a timer, not from a real vendor.
             </p>
           )}
-        </section>
+        </div>
 
-        <div className="flex flex-col gap-5">
-          <section className={card} aria-labelledby="items-h">
-            <h2 id="items-h" className="t-section text-[18px] text-ink">
+        <div className="flex flex-col gap-8">
+          <section className={section} aria-labelledby="items-h">
+            <h2 id="items-h" className="t-section text-ink">
               Your food
             </h2>
-            <ul className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-3.5">
               {order.lines.map((l, i) => {
                 const item = catalog.items.get(l.itemId);
                 return (
@@ -135,14 +135,14 @@ export function Tracking({ params }: { params: Promise<{ id: string }> }) {
                 </div>
               ))}
               <div className="flex items-baseline justify-between pt-1">
-                <dt className="t-card text-ink">{v.kind === "cancelled" ? "Total (not charged)" : "Total, pay on delivery"}</dt>
-                <dd className="t-price text-[20px] text-ink">{naira(order.total)}</dd>
+                <dt className="t-card text-ink">{v.kind === "cancelled" ? "Total (not charged)" : "Pay on delivery"}</dt>
+                <dd className="text-[24px] font-extrabold tracking-[-0.02em] tabular-nums text-ink">{naira(order.total)}</dd>
               </div>
             </dl>
           </section>
 
-          <section className={card} aria-labelledby="del-h">
-            <h2 id="del-h" className="t-section text-[18px] text-ink">
+          <section className={section} aria-labelledby="del-h">
+            <h2 id="del-h" className="t-section text-ink">
               Delivery
             </h2>
             <ul className="flex flex-col gap-3.5">

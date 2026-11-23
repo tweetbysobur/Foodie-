@@ -30,7 +30,7 @@ function Thumbs({ order }: { order: Order }) {
     <div className="flex -space-x-3">
       {order.lines.slice(0, 3).map((l, i) => {
         const item = items.get(l.itemId);
-        return item ? <FoodImage key={i} photo={item.photo} sizes="48px" className="size-12 rounded-full ring-[3px] ring-surface" /> : null;
+        return item ? <FoodImage key={i} photo={item.photo} sizes="48px" className="size-12 rounded-full ring-[3px] ring-cream" /> : null;
       })}
     </div>
   );
@@ -100,10 +100,10 @@ export default function OrdersPage() {
 
           {past.length > 0 && (
             <section aria-labelledby="past-h" className="flex flex-col gap-3">
-              <SectionTitle id="past-h">Past orders</SectionTitle>
-              <ul className="grid grid-cols-1 gap-3">
+              <h2 id="past-h" className="t-section text-ink">Past orders</h2>
+              <ul className="grid grid-cols-1 border-t-2 border-ink/80">
                 {past.map(({ o, v }) => (
-                  <li key={o.id} className="flex items-center gap-3 rounded-[var(--radius-card)] bg-surface p-3.5 shadow-soft">
+                  <li key={o.id} className="flex items-center gap-3 border-b border-line py-4">
                     <Link href={`/orders/${o.id}`} className="flex min-w-0 flex-1 items-center gap-3">
                       <Thumbs order={o} />
                       <span className="min-w-0 flex-1">

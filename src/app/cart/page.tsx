@@ -61,9 +61,9 @@ export default function CartPage() {
         />
       ) : (
         <div className="flex flex-col gap-6 md:grid md:grid-cols-[1fr_380px] md:items-start md:gap-10">
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-8">
             {groups.size > 1 && (
-              <p className="t-body flex gap-2.5 rounded-[var(--radius-tile)] bg-sage/70 px-4 py-3 text-ink">
+              <p className="t-body flex gap-2.5 text-ink">
                 <Info className="mt-0.5 size-[18px] shrink-0 text-green" aria-hidden />
                 Your food comes from {groups.size} kitchens, so it arrives as {groups.size} separate deliveries. Each one has its own delivery fee.
               </p>
@@ -72,8 +72,8 @@ export default function CartPage() {
             {[...groups.entries()].map(([vendorId, lines]) => {
               const vendor = catalog.vendors.get(vendorId);
               return (
-                <section key={vendorId} aria-label={`From ${vendor?.name}`} className="overflow-hidden rounded-[var(--radius-card)] bg-surface shadow-soft">
-                  <header className="flex items-center gap-3 border-b border-line px-4 py-3">
+                <section key={vendorId} aria-label={`From ${vendor?.name}`}>
+                  <header className="flex items-center gap-3 border-b-2 border-ink/80 pb-2.5">
                     <Store className="size-5 shrink-0 text-green" aria-hidden />
                     <div className="min-w-0 flex-1">
                       <h2 className="t-card truncate text-ink">{vendor?.name}</h2>
@@ -88,7 +88,7 @@ export default function CartPage() {
                       const labels = optionLabels(item, l.optionIds);
                       const each = unitPrice(item, l.optionIds);
                       return (
-                        <li key={l.key} className="flex flex-col gap-2.5 p-3.5">
+                        <li key={l.key} className="flex flex-col gap-2 py-4">
                           <div className="flex gap-3">
                             <Link href={`/food/${item.id}`} className="shrink-0 rounded-[14px]">
                               <FoodImage photo={item.photo} sizes="72px" className="size-[72px] rounded-[14px]" />
@@ -142,8 +142,8 @@ export default function CartPage() {
             })}
           </div>
 
-          <aside className="flex flex-col gap-3 md:sticky md:top-[104px]" aria-label="Order summary">
-            <h2 className="t-section hidden text-ink md:block">Summary</h2>
+          <aside className="flex flex-col gap-3 md:sticky md:top-[104px] md:rounded-[28px] md:bg-surface md:p-7" aria-label="Order summary">
+            
             <Summary totals={t} promoCode={state.promoCode} vendorFees={vendorFees} />
             {!state.promoCode && state.orders.length === 0 && <p className="t-support px-1 text-muted-ink">Have a promo code? Add it at checkout.</p>}
             <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-cream/95 px-5 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">

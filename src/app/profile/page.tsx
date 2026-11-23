@@ -29,13 +29,13 @@ function toAvatar(file: File): Promise<string> {
   });
 }
 
-const rowBase = "flex min-h-[58px] w-full items-center gap-3.5 px-4 text-left transition-colors";
+const rowBase = "flex min-h-[58px] w-full items-center gap-3.5 px-1 text-left transition-colors";
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section aria-label={title} className="flex flex-col gap-2">
-      <h2 className="t-card px-1 text-muted-ink">{title}</h2>
-      <div className="flex flex-col divide-y divide-line overflow-hidden rounded-[var(--radius-card)] bg-surface shadow-soft">{children}</div>
+      <h2 className="t-card text-muted-ink">{title}</h2>
+      <div className="flex flex-col divide-y divide-line border-y border-line">{children}</div>
     </section>
   );
 }
@@ -57,12 +57,12 @@ function Row({ icon: Icon, label, value, onClick, href, soon }: { icon: typeof M
     );
   if (href)
     return (
-      <Link href={href} className={cx(rowBase, "hover:bg-cream")}>
+      <Link href={href} className={cx(rowBase, "hover:text-green")}>
         {inner}
       </Link>
     );
   return (
-    <button onClick={onClick} className={cx(rowBase, "hover:bg-cream")}>
+    <button onClick={onClick} className={cx(rowBase, "hover:text-green")}>
       {inner}
     </button>
   );
@@ -82,7 +82,7 @@ export default function ProfilePage() {
       <PageHeader title="Profile" back={false} />
 
       <section className="flex items-center gap-4">
-        <div aria-hidden className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-green text-[30px] font-extrabold text-white ring-4 ring-surface shadow-soft">
+        <div aria-hidden className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-green text-[30px] font-extrabold text-white ring-4 ring-surface">
           {p.photo ? <Image src={p.photo} alt="" fill sizes="80px" className="object-cover" unoptimized /> : p.name[0]?.toUpperCase()}
         </div>
         <input
@@ -122,7 +122,7 @@ export default function ProfilePage() {
 
       <Group title="Saved addresses">
         {state.addresses.map((a) => (
-          <button key={a.id} onClick={() => setSheet("address")} className={cx(rowBase, "hover:bg-cream")}>
+          <button key={a.id} onClick={() => setSheet("address")} className={cx(rowBase, "hover:text-green")}>
             <MapPin className="size-5 shrink-0 text-green" aria-hidden />
             <span className="min-w-0 flex-1">
               <span className="t-body block text-[15px] text-ink">
@@ -134,7 +134,7 @@ export default function ProfilePage() {
             <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
           </button>
         ))}
-        <button onClick={() => setSheet("address")} className={cx(rowBase, "t-button text-green hover:bg-cream")}>
+        <button onClick={() => setSheet("address")} className={cx(rowBase, "t-button text-green hover:underline")}>
           + Add or edit addresses
         </button>
       </Group>

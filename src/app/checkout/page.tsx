@@ -90,13 +90,13 @@ export default function CheckoutPage() {
     if (state.profile && !state.profile.phone) dispatch({ type: "updateProfile", patch: { phone: phone.trim() } });
   };
 
-  const card = "flex flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-5 shadow-soft";
+  const card = "flex flex-col gap-4 border-t border-line pt-6 first:border-t-0 first:pt-0";
 
   return (
     <main className="flex flex-col gap-6 px-5 pb-[calc(124px+env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+16px)] md:px-0 md:pb-20 md:pt-10">
       <PageHeader title="Checkout" subtitle={`Arrives in about ${etaLo}-${etaHi} min`} />
-      <div className="flex flex-col gap-5 md:grid md:grid-cols-[1fr_400px] md:items-start md:gap-10">
-        <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-8 md:grid md:grid-cols-[1fr_420px] md:items-start md:gap-14">
+        <div className="flex flex-col gap-6">
           <section className={card} aria-labelledby="addr-h">
             <h2 id="addr-h" className="t-section text-[18px] text-ink">
               Delivery address
@@ -104,7 +104,7 @@ export default function CheckoutPage() {
             <button
               onClick={() => setAddrOpen(true)}
               aria-invalid={tried && !!errors.address}
-              className={cx("flex items-center gap-3 rounded-[var(--radius-tile)] bg-cream p-3.5 text-left transition-colors hover:bg-sage/40", tried && errors.address && "ring-2 ring-danger")}
+              className={cx("flex items-center gap-3 rounded-[var(--radius-tile)] bg-surface p-4 text-left ring-[1.5px] ring-line transition-colors hover:ring-green", tried && errors.address && "ring-2 ring-danger")}
             >
               <MapPin className="size-5 shrink-0 text-orange-strong" aria-hidden />
               <span className="min-w-0 flex-1">
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
                     onClick={() => setPayment(m.id)}
                     className={cx(
                       "flex min-h-16 items-center gap-3 rounded-[var(--radius-tile)] px-4 text-left transition-[background-color,box-shadow]",
-                      on ? "bg-sage shadow-[inset_0_0_0_2px_var(--color-green)]" : "bg-cream",
+                      on ? "bg-surface shadow-[inset_0_0_0_2px_var(--color-green)]" : "bg-surface shadow-[inset_0_0_0_1.5px_var(--color-line)]",
                       !m.available && "cursor-not-allowed",
                     )}
                   >
@@ -217,8 +217,8 @@ export default function CheckoutPage() {
           </section>
         </div>
 
-        <aside className="flex flex-col gap-4 md:sticky md:top-[104px]" aria-label="Total">
-          <section className={card} aria-labelledby="promo-h">
+        <aside className="flex flex-col gap-6 md:sticky md:top-[104px] md:rounded-[28px] md:bg-surface md:p-7" aria-label="Total">
+          <section className="flex flex-col gap-3" aria-labelledby="promo-h">
             <h2 id="promo-h" className="t-section text-[18px] text-ink">
               Promo code
             </h2>

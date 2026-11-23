@@ -82,7 +82,7 @@ function Detail({ item }: { item: MenuItem }) {
           )}
           <div className="flex items-start justify-between gap-3">
             <h1 className="t-page text-ink md:text-[32px]">{item.name}</h1>
-            <FavButton active={fav.isFav(item.id)} onClick={() => fav.toggle(item)} name={item.name} className="hidden bg-surface shadow-soft md:grid" />
+            <FavButton active={fav.isFav(item.id)} onClick={() => fav.toggle(item)} name={item.name} className="hidden bg-surface ring-[1.5px] ring-line md:grid" />
           </div>
           <p className="t-price mt-2 text-[22px] text-green">{naira(item.price)}</p>
           <p className="t-body mt-3 text-[15px] text-muted-ink">{item.description}</p>
@@ -90,7 +90,7 @@ function Detail({ item }: { item: MenuItem }) {
         </header>
 
         {/* Facts: rating, prep, delivery. Plain row, no boxes */}
-        <dl className="grid grid-cols-3 divide-x divide-line rounded-[var(--radius-card)] bg-surface py-3.5 text-center shadow-soft">
+        <dl className="grid grid-cols-3 divide-x divide-line border-y border-line py-4 text-center">
           <div className="px-2">
             <dt className="t-support text-muted-ink">Rating</dt>
             <dd className="t-card mt-0.5 inline-flex items-center gap-1 text-ink">
@@ -117,7 +117,7 @@ function Detail({ item }: { item: MenuItem }) {
         </dl>
 
         {vendor && (
-          <div className="flex items-center gap-3 border-y border-line py-3.5">
+          <div className="-mt-3 flex items-center gap-3 pb-1">
             <Store className="size-5 shrink-0 text-green" aria-hidden />
             <div className="min-w-0 flex-1">
               <p className="t-card truncate text-ink">{vendor.name}</p>
@@ -129,11 +129,12 @@ function Detail({ item }: { item: MenuItem }) {
         )}
 
         {item.options.map((g) => (
-          <fieldset key={g.id} className="flex flex-col gap-2">
+          <fieldset key={g.id} className="flex flex-col">
             <legend className="mb-2.5 flex w-full items-baseline justify-between gap-3">
               <span className="t-section text-[18px] text-ink">{g.name}</span>
               <span className={cx("t-support", g.type === "single" ? "font-medium text-ink" : "text-muted-ink")}>{g.type === "single" ? "Pick one" : "Optional"}</span>
             </legend>
+            <div className="overflow-hidden rounded-[18px] ring-[1.5px] ring-line">
             {g.choices.map((c) => {
               const on = optionIds.includes(c.id);
               return (
@@ -143,18 +144,19 @@ function Detail({ item }: { item: MenuItem }) {
                   aria-checked={on}
                   onClick={() => pick(g.id, c.id, g.type === "single")}
                   className={cx(
-                    "flex min-h-14 items-center gap-3 rounded-[var(--radius-tile)] px-4 text-left transition-[background-color,box-shadow] duration-150",
-                    on ? "bg-sage shadow-[inset_0_0_0_2px_var(--color-green)]" : "bg-surface shadow-[inset_0_0_0_1.5px_var(--color-line)] hover:bg-sage/30",
+                    "flex min-h-14 w-full items-center gap-3 border-b border-line px-4 text-left transition-colors duration-150 first:rounded-t-[18px] last:rounded-b-[18px] last:border-b-0",
+                    on ? "bg-sage/70" : "bg-surface hover:bg-cream",
                   )}
                 >
                   <span className={cx("grid size-[22px] shrink-0 place-items-center border-2 transition-colors", g.type === "single" ? "rounded-full" : "rounded-[7px]", on ? "border-green bg-green text-white" : "border-muted bg-surface")}>
                     {on && <Check className="animate-pop size-3.5" strokeWidth={3} />}
                   </span>
                   <span className={cx("flex-1 text-[15px]", on ? "font-semibold text-ink" : "font-medium text-ink")}>{c.label}</span>
-                  <span className="t-support tabular text-muted-ink">{c.price ? `+${naira(c.price)}` : "Included"}</span>
+                  <span className={cx("t-support tabular", on ? "font-medium text-ink" : "text-muted-ink")}>{c.price ? `+${naira(c.price)}` : "Included"}</span>
                 </button>
               );
             })}
+            </div>
           </fieldset>
         ))}
 

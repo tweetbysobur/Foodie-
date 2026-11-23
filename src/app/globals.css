@@ -4,7 +4,8 @@
   Foodie design tokens.
   Contrast measured against WCAG AA (4.5:1 for text under 18.66px bold):
   - orange #FF7138 is 2.74:1 with white: accent only (icons, badges, art).
-  - orange-strong #CF4510 carries white text (4.65:1): buttons, active chips, banner.
+  - orange-strong #CF4510 carries white text (4.65:1): buttons, active chips.
+  - burnt #D94B18 with white is 4.23:1: promo surfaces with text 19px bold or larger only.
   - secondary #718477 is 3.67:1 on cream: icons and large text only.
     Small secondary text uses muted-ink #5F7266 (4.74:1 on cream, 5.14:1 on white).
   - ink #354D3C on cream 8.50:1. Green #205C46 with white 7.83:1.
@@ -16,6 +17,7 @@
   --color-orange: #ff7138;
   --color-orange-strong: #cf4510;
   --color-orange-press: #b93d0e;
+  --color-burnt: #d94b18; /* promo surfaces: white on it is 4.23:1, so large bold text only */
   --color-cream: #fff4e8;
   --color-surface: #ffffff;
   --color-sage: #ddebdd;

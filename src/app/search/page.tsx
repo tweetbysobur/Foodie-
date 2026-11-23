@@ -6,7 +6,7 @@ import type { CategoryId, MenuItem, Vendor } from "@/lib/types";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { useStore } from "@/store/app-store";
 import { useCatalog } from "@/store/catalog";
-import { FoodRow, FoodRowSkeleton } from "@/components/food";
+import { ResultRow, ResultRowSkeleton } from "@/components/food";
 import { Button, Chip, Empty, ErrorState, FoodImage, Sheet, cx } from "@/components/ui";
 
 type Filters = { cat: CategoryId | "all"; price: "any" | "under3" | "3to7" | "over7"; maxMinutes: 0 | 30 | 45; minRating: 0 | 4 | 4.5; availableOnly: boolean; sort: Sort };
@@ -128,8 +128,8 @@ export default function SearchPage() {
               if (q.trim()) commit(q.trim());
             }}
             className={cx(
-              "flex h-14 min-w-0 flex-1 items-center gap-2.5 rounded-[18px] bg-surface pl-4 pr-1.5 shadow-soft transition-shadow",
-              focused && "ring-2 ring-green",
+              "flex h-14 min-w-0 flex-1 items-center gap-2.5 rounded-full bg-surface pl-5 pr-1.5 ring-[1.5px] transition-shadow",
+              focused ? "ring-2 ring-green" : "ring-line",
             )}
           >
             <SearchIcon className="size-5 shrink-0 text-green" aria-hidden />
@@ -157,7 +157,7 @@ export default function SearchPage() {
               type="button"
               onClick={() => setSheet(true)}
               aria-label={`Filters and sorting${filterCount ? `, ${filterCount} on` : ""}`}
-              className={cx("relative grid size-11 shrink-0 place-items-center rounded-[14px] transition-colors", filterCount ? "bg-green text-white" : "bg-sage text-green hover:bg-sage/70")}
+              className={cx("relative grid size-11 shrink-0 place-items-center rounded-full transition-colors", filterCount ? "bg-green text-white" : "bg-sage text-green hover:bg-sage/70")}
             >
               <SlidersHorizontal className="size-5" />
               {filterCount > 0 && (
@@ -238,7 +238,7 @@ export default function SearchPage() {
             <h2 id="popular-h" className="t-section text-ink">Popular dishes</h2>
             <div className="flex flex-wrap gap-2">
               {popular.map((m) => (
-                <button key={m.id} onClick={() => commit(m.name)} className="t-button inline-flex h-10 items-center gap-1.5 rounded-full bg-surface px-4 text-green shadow-[inset_0_0_0_1.5px_var(--color-line)] hover:bg-sage/50">
+                <button key={m.id} onClick={() => commit(m.name)} className="t-button inline-flex h-10 items-center gap-1.5 rounded-full bg-sage/70 px-4 text-green hover:bg-sage">
                   <TrendingUp className="size-4 text-orange-strong" aria-hidden />
                   {m.name}
                 </button>
@@ -279,7 +279,7 @@ export default function SearchPage() {
           {data && (
             <section aria-labelledby="vendors-h" className="flex flex-col gap-3">
               <h2 id="vendors-h" className="t-section text-ink">Vendors near you</h2>
-              <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-10">
                 {data.vendors.map((v) => (
                   <VendorCard key={v.id} vendor={v} dishes={data.menu.filter((m) => m.vendorId === v.id).length} onClick={() => setVendorId(v.id)} />
                 ))}
@@ -290,7 +290,7 @@ export default function SearchPage() {
       ) : (
         <div className="flex flex-col gap-4 px-5 md:px-0">
           {matchedVendors.length > 0 && !vendorId && (
-            <section aria-label="Matching vendors" className="flex flex-col gap-2.5">
+            <section aria-label="Matching vendors" className="flex flex-col border-y border-line">
               {matchedVendors.map((v) => (
                 <VendorCard key={v.id} vendor={v} dishes={data!.menu.filter((m) => m.vendorId === v.id).length} onClick={() => { setVendorId(v.id); setQ(""); }} />
               ))}
@@ -319,7 +319,7 @@ export default function SearchPage() {
           )}
 
           {catalog.state.status === "loading" ? (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{[0, 1, 2].map((i) => <FoodRowSkeleton key={i} />)}</div>
+            <div>{[0, 1, 2].map((i) => <ResultRowSkeleton key={i} />)}</div>
           ) : results.length === 0 ? (
             <Empty
               title="No dishes match"
@@ -331,7 +331,7 @@ export default function SearchPage() {
               }
             />
           ) : (
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{results.map((m) => <FoodRow key={m.id} item={m} />)}</div>
+            <ul className="md:grid md:grid-cols-2 md:gap-x-10 [&>li:last-child]:border-b-0">{results.map((m) => <ResultRow key={m.id} item={m} />)}</ul>
           )}
         </div>
       )}
@@ -354,7 +354,7 @@ export default function SearchPage() {
 
 function VendorCard({ vendor, dishes, onClick }: { vendor: Vendor; dishes: number; onClick: () => void }) {
   return (
-    <button onClick={onClick} className="flex min-h-[72px] items-center gap-3.5 rounded-[var(--radius-card)] bg-surface px-4 py-3 text-left shadow-soft transition-colors hover:bg-sage/30">
+    <button onClick={onClick} className="flex min-h-[68px] items-center gap-3.5 border-b border-line py-3 text-left transition-colors last:border-b-0 hover:text-green">
       <Store className="size-6 shrink-0 text-green" aria-hidden />
       <span className="min-w-0 flex-1">
         <span className="t-card block truncate text-ink">{vendor.name}</span>

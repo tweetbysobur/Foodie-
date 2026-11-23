@@ -36,7 +36,7 @@ export function Placed({ params }: { params: Promise<{ id: string }> }) {
           : `Your order from ${vendors} is saved on this device.`}
       </p>
 
-      <dl className="mt-7 w-full divide-y divide-line rounded-[var(--radius-card)] bg-surface text-left shadow-soft">
+      <dl className="mt-7 w-full divide-y divide-line border-y-2 border-ink/80 text-left [&>div]:px-1">
         <div className="flex justify-between gap-4 px-5 py-3.5">
           <dt className="t-body text-muted-ink">You pay on delivery</dt>
           <dd className="t-price text-ink">{naira(order.total)}</dd>
