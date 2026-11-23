@@ -76,7 +76,7 @@ export function FoodRow({ item, trailing }: { item: MenuItem; trailing?: "add" |
   const fav = useFavourite();
   const vendor = vendors.get(item.vendorId);
   return (
-    <article className="flex items-center gap-3 rounded-[var(--radius-card)] bg-surface p-2.5 pr-3 shadow-soft">
+    <article className="flex min-w-0 items-center gap-3 rounded-[var(--radius-card)] bg-surface p-2.5 pr-3 shadow-soft">
       <Link href={`/food/${item.id}`} className="flex min-w-0 flex-1 items-center gap-3.5">
         <FoodImage photo={item.photo} sizes="88px" className="size-[88px] shrink-0 rounded-[var(--radius-tile)]" />
         <span className="flex min-w-0 flex-col gap-0.5">

@@ -16,7 +16,7 @@ export default function FavouritesPage() {
       {catalog.state.status === "error" ? (
         <ErrorState message={catalog.state.message} onRetry={catalog.retry} />
       ) : catalog.state.status === "loading" ? (
-        <div className="grid gap-3 md:grid-cols-2">{[0, 1].map((i) => <FoodRowSkeleton key={i} />)}</div>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{[0, 1].map((i) => <FoodRowSkeleton key={i} />)}</div>
       ) : saved.length === 0 ? (
         <Empty
           title="No saved meals yet"
@@ -26,7 +26,7 @@ export default function FavouritesPage() {
       ) : (
         <>
           <p className="-mt-2 text-[14px] text-muted-ink">{saved.length} saved {saved.length === 1 ? "meal" : "meals"}</p>
-          <div className="grid gap-3 md:grid-cols-2">{saved.map((m) => <FoodRow key={m.id} item={m} trailing="fav" />)}</div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{saved.map((m) => <FoodRow key={m.id} item={m} trailing="fav" />)}</div>
         </>
       )}
     </main>

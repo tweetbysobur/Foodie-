@@ -218,7 +218,7 @@ export default function SearchPage() {
         {catalog.state.status === "error" ? (
           <ErrorState message={catalog.state.message} onRetry={catalog.retry} />
         ) : catalog.state.status === "loading" ? (
-          <div className="grid gap-3 md:grid-cols-2">{[0, 1, 2].map((i) => <FoodRowSkeleton key={i} />)}</div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{[0, 1, 2].map((i) => <FoodRowSkeleton key={i} />)}</div>
         ) : results.length === 0 ? (
           <Empty
             title="No dishes match"
@@ -238,7 +238,7 @@ export default function SearchPage() {
             }
           />
         ) : (
-          <div className="grid gap-3 md:grid-cols-2">{results.map((m) => <FoodRow key={m.id} item={m} />)}</div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{results.map((m) => <FoodRow key={m.id} item={m} />)}</div>
         )}
       </section>
 

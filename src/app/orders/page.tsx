@@ -22,7 +22,7 @@ export default function OrdersPage() {
           action={<Link href="/" className="inline-flex min-h-11 items-center rounded-full bg-orange-strong px-5 font-bold text-white">Browse food</Link>}
         />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {state.orders.map((o) => {
             const s = orderStatus(o, now);
             return (
