@@ -2,14 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { Banknote, Bell, Camera, ChevronRight, Heart, History, Image as ImageIcon, LogOut, MapPin, UserRound } from "lucide-react";
+import { useRef, useState, type ReactNode } from "react";
+import { Banknote, Bell, Camera, ChevronRight, FileText, Heart, History, Image as ImageIcon, LifeBuoy, LogOut, Mail, MapPin, Phone, ShieldCheck, UserRound } from "lucide-react";
 import { PAYMENT_METHODS } from "@/lib/payments";
-import { useCatalog } from "@/store/catalog";
 import { useStore } from "@/store/app-store";
+import { useCatalog } from "@/store/catalog";
 import { useToast } from "@/store/toast";
-import { AddressSheet, formatAddress } from "@/components/shell";
-import { Button, Field, PageHeader, Sheet, cx, inputClass } from "@/components/ui";
+import { AddressSheet, formatAddress, validPhone } from "@/components/shell";
+import { Button, Field, PageHeader, Sheet, TextInput, cx } from "@/components/ui";
 
 /** Shrinks a chosen photo to 256px so it fits in local storage. */
 function toAvatar(file: File): Promise<string> {
@@ -29,27 +29,62 @@ function toAvatar(file: File): Promise<string> {
   });
 }
 
+const rowBase = "flex min-h-[58px] w-full items-center gap-3.5 px-4 text-left transition-colors";
+
+function Group({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section aria-label={title} className="flex flex-col gap-2">
+      <h2 className="t-card px-1 text-muted-ink">{title}</h2>
+      <div className="flex flex-col divide-y divide-line overflow-hidden rounded-[var(--radius-card)] bg-surface shadow-soft">{children}</div>
+    </section>
+  );
+}
+
+function Row({ icon: Icon, label, value, onClick, href, soon }: { icon: typeof Mail; label: string; value?: string; onClick?: () => void; href?: string; soon?: boolean }) {
+  const inner = (
+    <>
+      <Icon className={cx("size-5 shrink-0", soon ? "text-muted" : "text-green")} aria-hidden />
+      <span className={cx("t-body min-w-0 flex-1 text-[15px]", soon ? "text-muted-ink" : "text-ink")}>{label}</span>
+      {value && <span className="t-support max-w-[45%] truncate text-muted-ink">{value}</span>}
+      {soon ? <span className="t-support font-medium text-muted-ink">Soon</span> : <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />}
+    </>
+  );
+  if (soon)
+    return (
+      <div className={rowBase} aria-disabled="true">
+        {inner}
+      </div>
+    );
+  if (href)
+    return (
+      <Link href={href} className={cx(rowBase, "hover:bg-cream")}>
+        {inner}
+      </Link>
+    );
+  return (
+    <button onClick={onClick} className={cx(rowBase, "hover:bg-cream")}>
+      {inner}
+    </button>
+  );
+}
+
 export default function ProfilePage() {
-  const { state, dispatch, address } = useStore();
+  const { state, dispatch } = useStore();
+  const catalog = useCatalog();
   const toast = useToast();
   const file = useRef<HTMLInputElement>(null);
-  const catalog = useCatalog();
-  const menu = catalog.state.status === "ready" ? catalog.state.data.menu : [];
   const [sheet, setSheet] = useState<null | "edit" | "address" | "payment" | "credits" | "logout">(null);
   const p = state.profile!;
-  const row = "flex min-h-[60px] w-full items-center gap-3.5 px-1 text-left text-[16px] text-ink";
+  const menu = catalog.state.status === "ready" ? catalog.state.data.menu : [];
 
   return (
-    <main className="pb-nav flex flex-col gap-5 px-5 pt-[calc(env(safe-area-inset-top)+20px)] md:mx-auto md:w-full md:max-w-2xl md:px-0 md:pt-8">
+    <main className="pb-nav flex flex-col gap-7 px-5 pt-[calc(env(safe-area-inset-top)+20px)] md:mx-auto md:w-full md:max-w-2xl md:px-0 md:pt-10">
       <PageHeader title="Profile" back={false} />
 
-      <section className="flex items-center gap-4 rounded-[var(--radius-card)] bg-surface p-5 shadow-soft">
-        <button onClick={() => file.current?.click()} aria-label="Change profile photo" className="relative grid size-[72px] shrink-0 place-items-center overflow-hidden rounded-full bg-green text-[28px] font-bold text-white">
-          {p.photo ? <Image src={p.photo} alt="" fill sizes="72px" className="object-cover" unoptimized /> : p.name[0]?.toUpperCase()}
-          <span className="absolute bottom-0 right-0 grid size-6 place-items-center rounded-full bg-orange-strong text-white ring-2 ring-surface">
-            <Camera className="size-3.5" />
-          </span>
-        </button>
+      <section className="flex items-center gap-4">
+        <div aria-hidden className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-green text-[30px] font-extrabold text-white ring-4 ring-surface shadow-soft">
+          {p.photo ? <Image src={p.photo} alt="" fill sizes="80px" className="object-cover" unoptimized /> : p.name[0]?.toUpperCase()}
+        </div>
         <input
           ref={file}
           type="file"
@@ -68,56 +103,58 @@ export default function ProfilePage() {
           }}
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[20px] font-bold text-ink">{p.name}</p>
-          <p className="truncate text-[14px] text-muted-ink">{p.phone || "No phone number yet"}</p>
+          <p className="t-section truncate text-ink">{p.name}</p>
+          <p className="t-support truncate text-muted-ink">{p.phone || "No phone number yet"}</p>
+          <button onClick={() => file.current?.click()} className="t-support mt-0.5 inline-flex items-center gap-1 font-medium text-green">
+            <Camera className="size-3.5" aria-hidden /> {p.photo ? "Change photo" : "Add a photo"}
+          </button>
         </div>
-        <Button variant="secondary" onClick={() => setSheet("edit")}>Edit</Button>
+        <Button variant="secondary" className="h-10 min-h-0 px-4" onClick={() => setSheet("edit")}>
+          Edit
+        </Button>
       </section>
 
-      <nav aria-label="Account" className="flex flex-col divide-y divide-line rounded-[var(--radius-card)] bg-surface px-4 shadow-soft">
-        <button className={row} onClick={() => setSheet("address")}>
-          <MapPin className="size-5 text-green" />
-          <span className="min-w-0 flex-1">
-            Saved addresses
-            <span className="block truncate text-[13px] text-muted-ink">{address ? formatAddress(address) : "None yet"}</span>
-          </span>
-          <span className="tabular text-[14px] text-muted-ink">{state.addresses.length}</span>
-          <ChevronRight className="size-5 text-muted" />
+      <Group title="Personal information">
+        <Row icon={UserRound} label="Name" value={p.name} onClick={() => setSheet("edit")} />
+        <Row icon={Phone} label="Phone number" value={p.phone || "Add"} onClick={() => setSheet("edit")} />
+        <Row icon={Mail} label="Email" value={p.email || "Add"} onClick={() => setSheet("edit")} />
+      </Group>
+
+      <Group title="Saved addresses">
+        {state.addresses.map((a) => (
+          <button key={a.id} onClick={() => setSheet("address")} className={cx(rowBase, "hover:bg-cream")}>
+            <MapPin className="size-5 shrink-0 text-green" aria-hidden />
+            <span className="min-w-0 flex-1">
+              <span className="t-body block text-[15px] text-ink">
+                {a.label}
+                {a.id === state.selectedAddressId && <span className="t-support ml-2 text-green">Default</span>}
+              </span>
+              <span className="t-support block truncate text-muted-ink">{formatAddress(a)}</span>
+            </span>
+            <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
+          </button>
+        ))}
+        <button onClick={() => setSheet("address")} className={cx(rowBase, "t-button text-green hover:bg-cream")}>
+          + Add or edit addresses
         </button>
-        <Link className={row} href="/orders">
-          <History className="size-5 text-green" />
-          <span className="flex-1">Order history</span>
-          <span className="tabular text-[14px] text-muted-ink">{state.orders.length}</span>
-          <ChevronRight className="size-5 text-muted" />
-        </Link>
-        <Link className={row} href="/favourites">
-          <Heart className="size-5 text-green" />
-          <span className="flex-1">Favourite meals</span>
-          <span className="tabular text-[14px] text-muted-ink">{state.favourites.length}</span>
-          <ChevronRight className="size-5 text-muted" />
-        </Link>
-        <button className={row} onClick={() => setSheet("payment")}>
-          <Banknote className="size-5 text-green" />
-          <span className="flex-1">Payment preference</span>
-          <span className="text-[14px] text-muted-ink">{PAYMENT_METHODS.find((m) => m.id === p.preferredPayment)?.label}</span>
-          <ChevronRight className="size-5 text-muted" />
-        </button>
-        <div className={cx(row, "text-muted-ink")} aria-disabled="true">
-          <Bell className="size-5" />
-          <span className="flex-1">Notifications</span>
-          <span className="rounded-full bg-cream px-2.5 py-1 text-[12px] font-semibold">Soon</span>
-        </div>
-        <button className={row} onClick={() => setSheet("edit")}>
-          <UserRound className="size-5 text-green" />
-          <span className="flex-1">Account settings</span>
-          <ChevronRight className="size-5 text-muted" />
-        </button>
-        <button className={row} onClick={() => setSheet("credits")}>
-          <ImageIcon className="size-5 text-green" />
-          <span className="flex-1">Photo credits</span>
-          <ChevronRight className="size-5 text-muted" />
-        </button>
-      </nav>
+      </Group>
+
+      <Group title="Activity">
+        <Row icon={History} label="Order history" value={`${state.orders.length}`} href="/orders" />
+        <Row icon={Heart} label="Favourite meals" value={`${state.favourites.length}`} href="/favourites" />
+      </Group>
+
+      <Group title="Preferences">
+        <Row icon={Banknote} label="Payment method" value={PAYMENT_METHODS.find((m) => m.id === p.preferredPayment)?.label} onClick={() => setSheet("payment")} />
+        <Row icon={Bell} label="Notifications" soon />
+      </Group>
+
+      <Group title="More">
+        <Row icon={LifeBuoy} label="Help and support" soon />
+        <Row icon={FileText} label="Terms and conditions" soon />
+        <Row icon={ShieldCheck} label="Privacy policy" soon />
+        <Row icon={ImageIcon} label="Photo credits" onClick={() => setSheet("credits")} />
+      </Group>
 
       <Button variant="danger" size="lg" onClick={() => setSheet("logout")}>
         <LogOut className="size-5" /> Log out
@@ -126,7 +163,7 @@ export default function ProfilePage() {
       {sheet === "address" && <AddressSheet onClose={() => setSheet(null)} />}
       {sheet === "edit" && <EditProfile onClose={() => setSheet(null)} />}
       {sheet === "payment" && (
-        <Sheet title="Payment preference" onClose={() => setSheet(null)}>
+        <Sheet title="Payment method" onClose={() => setSheet(null)}>
           <div className="flex flex-col gap-2">
             {PAYMENT_METHODS.map((m) => (
               <button
@@ -135,14 +172,19 @@ export default function ProfilePage() {
                 onClick={() => {
                   dispatch({ type: "updateProfile", patch: { preferredPayment: m.id } });
                   setSheet(null);
+                  toast("Payment preference saved");
                 }}
-                className={cx("flex min-h-16 items-center justify-between gap-3 rounded-[var(--radius-tile)] px-4 text-left", p.preferredPayment === m.id ? "bg-sage" : "bg-cream", !m.available && "opacity-60")}
+                className={cx(
+                  "flex min-h-16 items-center justify-between gap-3 rounded-[var(--radius-tile)] px-4 text-left",
+                  p.preferredPayment === m.id ? "bg-sage shadow-[inset_0_0_0_2px_var(--color-green)]" : "bg-cream",
+                  !m.available && "cursor-not-allowed",
+                )}
               >
                 <span>
-                  <span className="block font-semibold text-ink">{m.label}</span>
-                  <span className="block text-[13px] text-muted-ink">{m.detail}</span>
+                  <span className={cx("t-card block", m.available ? "text-ink" : "text-muted-ink")}>{m.label}</span>
+                  <span className="t-support block text-muted-ink">{m.detail}</span>
                 </span>
-                {!m.available && <span className="rounded-full bg-surface px-2.5 py-1 text-[12px] font-semibold text-muted-ink">Soon</span>}
+                {!m.available && <span className="t-support font-medium text-muted-ink">Soon</span>}
               </button>
             ))}
           </div>
@@ -150,12 +192,12 @@ export default function ProfilePage() {
       )}
       {sheet === "credits" && (
         <Sheet title="Photo credits" onClose={() => setSheet(null)}>
-          <p className="mb-4 text-[14px] text-muted-ink">Dish photos come from Wikimedia Commons under open licences.</p>
+          <p className="t-body mb-4 text-muted-ink">Dish photos come from Wikimedia Commons under open licences.</p>
           <ul className="flex flex-col gap-3">
             {menu.map((m) => (
-              <li key={m.id} className="text-[14px]">
-                <span className="block font-semibold text-ink">{m.name}</span>
-                <a href={m.photo.credit.url} target="_blank" rel="noreferrer" className="text-muted-ink underline underline-offset-2">
+              <li key={m.id}>
+                <span className="t-card block text-[15px] text-ink">{m.name}</span>
+                <a href={m.photo.credit.url} target="_blank" rel="noreferrer" className="t-support text-muted-ink underline underline-offset-2 hover:text-green">
                   {m.photo.credit.author}, {m.photo.credit.licence}
                 </a>
               </li>
@@ -164,12 +206,21 @@ export default function ProfilePage() {
         </Sheet>
       )}
       {sheet === "logout" && (
-        <Sheet title="Log out?" onClose={() => setSheet(null)}>
-          <p className="text-[15px] leading-relaxed text-muted-ink">This removes your profile, addresses, cart, favourites and order history from this device.</p>
-          <div className="mt-5 flex gap-3">
-            <Button variant="secondary" className="flex-1" onClick={() => setSheet(null)}>Stay</Button>
-            <Button className="flex-1" onClick={() => dispatch({ type: "logOut" })}>Log out</Button>
-          </div>
+        <Sheet
+          title="Log out?"
+          onClose={() => setSheet(null)}
+          footer={
+            <div className="flex gap-3">
+              <Button variant="secondary" className="flex-1" onClick={() => setSheet(null)}>
+                Stay
+              </Button>
+              <Button className="flex-1" onClick={() => dispatch({ type: "logOut" })}>
+                Log out
+              </Button>
+            </div>
+          }
+        >
+          <p className="t-body text-[15px] text-muted-ink">This removes your profile, addresses, cart, favourites and order history from this device.</p>
         </Sheet>
       )}
     </main>
@@ -181,31 +232,49 @@ function EditProfile({ onClose }: { onClose: () => void }) {
   const toast = useToast();
   const [name, setName] = useState(state.profile!.name);
   const [phone, setPhone] = useState(state.profile!.phone);
+  const [email, setEmail] = useState(state.profile!.email ?? "");
+  const [tried, setTried] = useState(false);
+  const errors = {
+    name: !name.trim() ? "Enter your first name." : "",
+    phone: phone.trim() && !validPhone(phone) ? "Enter a Nigerian number, for example 0803 123 4567." : "",
+    email: email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? "Enter a valid email address." : "",
+  };
   return (
-    <Sheet title="Account settings" onClose={onClose}>
-      <form
-        className="flex flex-col gap-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (!name.trim()) return;
-          dispatch({ type: "updateProfile", patch: { name: name.trim(), phone: phone.trim() } });
-          toast("Profile saved");
-          onClose();
-        }}
-      >
-        <Field label="First name">
-          <input className={inputClass} value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" required />
+    <Sheet
+      title="Personal information"
+      onClose={onClose}
+      footer={
+        <Button
+          size="lg"
+          className="w-full"
+          onClick={() => {
+            setTried(true);
+            if (Object.values(errors).some(Boolean)) return;
+            dispatch({ type: "updateProfile", patch: { name: name.trim(), phone: phone.trim(), email: email.trim() || undefined } });
+            toast("Profile saved");
+            onClose();
+          }}
+        >
+          Save changes
+        </Button>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        <Field label="First name" id="p-name" error={tried ? errors.name : ""}>
+          <TextInput id="p-name" error={tried ? errors.name : ""} value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" />
         </Field>
-        <Field label="Phone number">
-          <input className={inputClass} value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" />
+        <Field label="Phone number" id="p-phone" error={tried ? errors.phone : ""}>
+          <TextInput id="p-phone" error={tried ? errors.phone : ""} value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" />
+        </Field>
+        <Field label="Email" id="p-email" hint="Optional. For receipts once they are available." error={tried ? errors.email : ""}>
+          <TextInput id="p-email" error={tried ? errors.email : ""} value={email} onChange={(e) => setEmail(e.target.value)} type="email" inputMode="email" autoComplete="email" />
         </Field>
         {state.profile!.photo && (
           <Button variant="secondary" onClick={() => dispatch({ type: "updateProfile", patch: { photo: null } })}>
             Remove profile photo
           </Button>
         )}
-        <Button type="submit" size="lg" disabled={!name.trim()}>Save</Button>
-      </form>
+      </div>
     </Sheet>
   );
 }

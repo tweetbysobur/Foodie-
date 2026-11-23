@@ -2,17 +2,20 @@
 
 /*
   Foodie design tokens.
-  Contrast measured against WCAG AA:
-  - orange #FF7138 is 2.74:1 with white, so it is an accent only (badges, icons, banner art).
-  - orange-strong #CF4510 carries white text (4.65:1): buttons, active chips.
-  - muted #718477 is 3.67:1 on cream, so small text uses muted-ink #5F7266 (4.74:1).
-  - text #354D3C on cream is 8.50:1. Green #205C46 with white is 7.83:1.
+  Contrast measured against WCAG AA (4.5:1 for text under 18.66px bold):
+  - orange #FF7138 is 2.74:1 with white: accent only (icons, badges, art).
+  - orange-strong #CF4510 carries white text (4.65:1): buttons, active chips, banner.
+  - secondary #718477 is 3.67:1 on cream: icons and large text only.
+    Small secondary text uses muted-ink #5F7266 (4.74:1 on cream, 5.14:1 on white).
+  - ink #354D3C on cream 8.50:1. Green #205C46 with white 7.83:1.
   No black, charcoal or dark grey anywhere.
 */
 @theme {
   --color-green: #205c46;
+  --color-green-deep: #1a4d3a;
   --color-orange: #ff7138;
   --color-orange-strong: #cf4510;
+  --color-orange-press: #b93d0e;
   --color-cream: #fff4e8;
   --color-surface: #ffffff;
   --color-sage: #ddebdd;
@@ -22,17 +25,95 @@
   --color-muted-ink: #5f7266;
   --color-line: #ede5da;
   --color-danger: #b4381a;
+  --color-danger-soft: #fbe4dc;
 
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-dm), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-wordmark: var(--font-nunito), var(--font-jakarta), ui-rounded, sans-serif;
 
   --radius-card: 20px;
   --radius-tile: 16px;
 
   --shadow-soft: 0 6px 20px rgb(53 77 60 / 0.08);
   --shadow-float: 0 10px 30px rgb(53 77 60 / 0.16);
+}
 
-  --text-label: 12px;
-  --text-label--line-height: 16px;
+/*
+  Type scale. Plus Jakarta Sans: headings, names, prices, buttons, labels, navigation.
+  DM Sans: reading text (descriptions, supporting copy, instructions).
+  Letter spacing has three values only: headings -0.01em, uppercase labels +0.06em, the rest 0.
+*/
+@utility t-display {
+  font-family: var(--font-sans);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+@utility t-page {
+  font-family: var(--font-sans);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+@utility t-section {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+@utility t-card {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+@utility t-body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+@utility t-support {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+@utility t-button {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+@utility t-price {
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+  font-variant-numeric: tabular-nums;
+}
+@utility t-nav {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+@utility t-label {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+@utility t-field {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 :root {
@@ -85,16 +166,27 @@ select {
   font-variant-numeric: tabular-nums;
 }
 
-/* Space for the floating bottom nav and the iPhone home indicator */
-.pb-nav {
-  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+/* Fades the right edge of a horizontal rail so a clipped item reads as "scroll for more" */
+.rail-fade {
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
 }
 @media (min-width: 768px) {
-  .pb-nav {
-    padding-bottom: 48px;
+  .rail-fade {
+    mask-image: none;
   }
 }
 
+/* Room for the floating bottom nav and the iPhone home indicator */
+.pb-nav {
+  padding-bottom: calc(124px + env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .pb-nav {
+    padding-bottom: 72px;
+  }
+}
+
+/* Motion: short, tied to a state change, and off for people who ask for less */
 @keyframes rise {
   from {
     transform: translateY(100%);
@@ -105,10 +197,32 @@ select {
     opacity: 0;
   }
 }
-@keyframes drop {
+/* Opacity only: a transform here would make fixed bottom bars position against the page wrapper */
+@keyframes page-in {
   from {
     opacity: 0;
-    transform: translateY(-8px);
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.28);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes bump {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.16);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 @keyframes shimmer {
@@ -117,13 +231,19 @@ select {
   }
 }
 .animate-rise {
-  animation: rise 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  animation: rise 0.32s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .animate-fade {
   animation: fade 0.2s ease-out;
 }
-.animate-drop {
-  animation: drop 0.22s ease-out;
+.animate-page {
+  animation: page-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.animate-pop {
+  animation: pop 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.animate-bump {
+  animation: bump 0.3s ease-out;
 }
 .skeleton {
   background: linear-gradient(90deg, var(--color-line) 25%, #f6efe6 50%, var(--color-line) 75%);

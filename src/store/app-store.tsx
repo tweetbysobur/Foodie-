@@ -47,6 +47,7 @@ type Action =
   | { type: "setPromo"; code: string | null }
   | { type: "toggleFavourite"; itemId: string }
   | { type: "placeOrder"; order: Order }
+  | { type: "cancelOrder"; id: string }
   | { type: "addSearch"; term: string }
   | { type: "clearSearches" };
 
@@ -100,6 +101,8 @@ function reducer(s: State, a: Action): State {
       };
     case "placeOrder":
       return { ...s, orders: [a.order, ...s.orders], cart: [], promoCode: null };
+    case "cancelOrder":
+      return { ...s, orders: s.orders.map((o) => (o.id === a.id && !o.cancelledAt ? { ...o, cancelledAt: Date.now() } : o)) };
     case "addSearch": {
       const term = a.term.trim();
       if (!term) return s;

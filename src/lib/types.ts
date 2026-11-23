@@ -113,11 +113,14 @@ export type Order = {
   contact: { name: string; phone: string; instructions: string };
   placedAt: number;
   etaMinutes: [number, number];
+  /** Set when the customer cancels before the vendor confirms. */
+  cancelledAt?: number;
 };
 
 export type Profile = {
   name: string;
   phone: string;
+  email?: string;
   photo: string | null;
   preferredPayment: PaymentMethodId;
 };

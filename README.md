@@ -27,8 +27,10 @@ Add `?simulate=error` to any URL to see the error state with retry.
 
 - Menu, vendors, ratings and prep times are sample data in `src/lib/mock-data.ts`.
 - Payment: only pay on delivery works. Card and bank transfer show "Soon". Nothing is charged and no payment is ever shown as successful. See `src/lib/payments.ts` for the provider interface.
-- Order status moves on a demo timer (`src/lib/order-status.ts`) because vendors and riders are not connected. The tracking screen says so.
-- Notifications are marked "Soon".
+- Vendors and riders are not connected, so a placed order is saved on the device only. The confirmation and tracking screens say so. Set `VENDORS_CONNECTED` in `src/lib/order-status.ts` once orders reach vendors.
+- Tracking stays at "Order placed" until a backend sends real status. For demos, run with `NEXT_PUBLIC_DEMO_TRACKING=1` to walk the stages on a timer; the screen labels it as a demo.
+- Customers can cancel until the vendor confirms.
+- Notifications, help, terms and privacy are marked "Soon" until real content exists.
 - Promo codes TEGA10 and GENTLE give 10% off the first order, capped at ₦5,000.
 
 ## Going live with Supabase
@@ -54,3 +56,9 @@ Swap each function body in `api.ts` for a Supabase query and keep the return typ
 ## Food photos
 
 From Wikimedia Commons under open licences. Credits show in the app under Profile, Photo credits, and in `src/lib/mock-data.ts`. Keep the credits if you keep the photos.
+
+## Design system
+
+- Type: Plus Jakarta Sans for headings, names, prices, buttons and labels. DM Sans for descriptions and supporting text. Nunito Black for the Foodie wordmark only. Scale utilities (`t-display`, `t-page`, `t-section`, `t-card`, `t-body`, `t-support`, `t-button`, `t-price`, `t-nav`) live in `src/app/globals.css`.
+- Components and their states (buttons, inputs, chips, sheets, empty and error states) live in `src/components/ui.tsx`.
+- Motion is short and tied to state changes, and switches off under reduced motion.
