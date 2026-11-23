@@ -33,7 +33,8 @@ export function useFavourite() {
 }
 
 /** Grid or rail card: photo, best seller badge, name, vendor, price, add. */
-export function FoodCard({ item, priority, className }: { item: MenuItem; priority?: boolean; className?: string }) {
+/** showBadge: false in the best sellers rail, where every card would carry the same badge. */
+export function FoodCard({ item, priority, className, showBadge = true }: { item: MenuItem; priority?: boolean; className?: string; showBadge?: boolean }) {
   const { vendors } = useCatalog();
   const add = useQuickAdd();
   return (
@@ -41,7 +42,7 @@ export function FoodCard({ item, priority, className }: { item: MenuItem; priori
       <Link href={`/food/${item.id}`} className="flex flex-1 flex-col" aria-label={`${item.name}, ${naira(item.price)}`}>
         <div className="relative">
           <FoodImage photo={item.photo} priority={priority} sizes="(min-width: 1024px) 240px, (min-width: 768px) 30vw, 180px" className="aspect-square rounded-[var(--radius-tile)]" />
-          {item.bestSeller && (
+          {showBadge && item.bestSeller && (
             <span className="absolute left-2 top-2 rounded-lg bg-green px-2 py-1 text-[11px] font-bold tracking-wider text-white">BEST SELLER</span>
           )}
           {!item.available && <span className="absolute inset-x-2 bottom-2 rounded-lg bg-surface/95 py-1 text-center text-[12px] font-bold text-danger">Sold out</span>}

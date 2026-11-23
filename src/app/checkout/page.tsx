@@ -240,7 +240,7 @@ export default function CheckoutPage() {
         <div className="flex flex-col gap-4 md:sticky md:top-24">
           <Summary totals={t} promoCode={state.promoCode} />
           <p className="text-[13px] leading-relaxed text-muted-ink">
-            You pay {naira(t.total)} to the rider on delivery. Nothing is charged in the app.
+            Pay the rider when your food arrives. Nothing is charged in the app.
           </p>
           <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-cream px-5 pb-[calc(14px+env(safe-area-inset-bottom))] pt-3 md:static md:border-0 md:bg-transparent md:p-0">
             <Button size="lg" className="w-full" onClick={place} disabled={placing}>

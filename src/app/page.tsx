@@ -130,7 +130,7 @@ export default function HomePage() {
         ) : (
           <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-3.5 overflow-x-auto px-5 pb-2 scroll-px-5 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 lg:grid-cols-4">
             {shown.map((m, i) => (
-              <FoodCard key={m.id} item={m} priority={i < 2} className="w-[180px] shrink-0 snap-start md:w-auto" />
+              <FoodCard key={m.id} item={m} priority={i < 2} showBadge={cat !== "all"} className="w-[180px] shrink-0 snap-start md:w-auto" />
             ))}
           </div>
         )}

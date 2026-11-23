@@ -138,6 +138,7 @@ export function SectionTitle({ children, action }: { children: ReactNode; action
 export function Empty({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-start gap-1.5 rounded-[var(--radius-card)] bg-surface px-5 py-6">
+      <Image src="/brand/foodie-mark.webp" alt="" width={52} height={52} className="mb-2 opacity-90" />
       <p className="text-[17px] font-bold text-ink">{title}</p>
       <p className="text-[15px] leading-relaxed text-muted-ink">{body}</p>
       {action && <div className="mt-3">{action}</div>}
