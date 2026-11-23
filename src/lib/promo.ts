@@ -2,11 +2,10 @@
 type Promo = { code: string; percent: number; firstOrderOnly: boolean; maxDiscount: number };
 
 export const PROMOS: Promo[] = [
-  { code: "TEGA10", percent: 10, firstOrderOnly: true, maxDiscount: 5000 },
   { code: "GENTLE", percent: 10, firstOrderOnly: true, maxDiscount: 5000 },
 ];
 
-export const BANNER_CODE = "TEGA10";
+export const BANNER_CODE = "GENTLE";
 
 export type PromoResult = { ok: true; promo: Promo } | { ok: false; error: string };
 

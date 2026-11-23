@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState, type ReactNode } from "react";
 import type { Address, CartLine, Order, Profile } from "@/lib/types";
 import { lineKey } from "@/lib/pricing";
+import { checkPromo } from "@/lib/promo";
 
 /**
  * Client state for the prototype, saved to localStorage on this device.
@@ -126,7 +127,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(KEY);
-      if (raw) dispatch({ type: "hydrate", state: { ...EMPTY, ...JSON.parse(raw) } });
+      if (raw) {
+        const saved: State = { ...EMPTY, ...JSON.parse(raw) };
+        // Drop a saved code that no longer exists (for example a retired promo).
+        if (saved.promoCode && !checkPromo(saved.promoCode, 0).ok) saved.promoCode = null;
+        dispatch({ type: "hydrate", state: saved });
+      }
     } catch {
       /* storage blocked or corrupt: start empty */
     }

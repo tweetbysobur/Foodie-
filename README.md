@@ -31,7 +31,7 @@ Add `?simulate=error` to any URL to see the error state with retry.
 - Tracking stays at "Order placed" until a backend sends real status. For demos, run with `NEXT_PUBLIC_DEMO_TRACKING=1` to walk the stages on a timer; the screen labels it as a demo.
 - Customers can cancel until the vendor confirms.
 - Notifications, help, terms and privacy are marked "Soon" until real content exists.
-- Promo codes TEGA10 and GENTLE give 10% off the first order, capped at ₦5,000.
+- Promo code GENTLE gives 10% off the first order, capped at ₦5,000.
 
 ## Going live with Supabase
 
