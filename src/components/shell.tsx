@@ -1,9 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
-import { Check, Heart, House, Pencil, Plus, ReceiptText, Search, ShoppingBag, Trash2, UserRound } from "lucide-react";
+import { ArrowLeft, Check, Heart, House, MapPin, Pencil, Plus, ReceiptText, Search, ShoppingBag, Trash2, UserRound } from "lucide-react";
 import { naira } from "@/lib/format";
 import { cartTotals } from "@/lib/pricing";
 import type { Address } from "@/lib/types";
@@ -236,70 +237,139 @@ export function AddressSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** First visit: name and phone, then the delivery address. Saved on this device only. */
+/** Areas we know kitchens deliver to. Anything else can be typed. */
+const AREAS = ["Alabata", "Kuto", "Ibara", "Oke-Ilewo", "Lafenwa", "Panseke"];
+const MOSAIC = [
+  { src: "/food/jollof-rice-chicken.jpg", alt: "Jollof rice with chicken and fried plantain" },
+  { src: "/food/beef-suya.jpg", alt: "Beef suya with yaji and onions" },
+  { src: "/food/amala-ewedu.jpg", alt: "Amala with ewedu and stew" },
+  { src: "/food/fried-rice.jpg", alt: "Fried rice with chicken" },
+];
+
+/**
+ * First visit. Screen 1 shows the food and the promise. Screen 2 asks only what
+ * Home needs: a first name and where to deliver. Phone is asked at checkout, where
+ * the rider actually needs it. Everything is saved on this device only.
+ */
 function Welcome() {
   const { dispatch } = useStore();
+  const [step, setStep] = useState<"intro" | "details">("intro");
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [area, setArea] = useState("");
+  const [otherArea, setOtherArea] = useState("");
+  const [line, setLine] = useState("");
   const [tried, setTried] = useState(false);
-  const [step, setStep] = useState<1 | 2>(1);
+  const chosenArea = area === "Other" ? otherArea.trim() : area;
   const errors = {
     name: !name.trim() ? "Tell us your first name." : "",
-    phone: !validPhone(phone) ? "Enter a Nigerian number, for example 0803 123 4567." : "",
+    area: !chosenArea ? "Pick your area, or choose Other and type it." : "",
+    line: line.trim().length < 3 ? "Enter your house number and street." : "",
   };
-  return (
-    <main className="animate-page mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-10 pt-[calc(env(safe-area-inset-top)+48px)]">
-      <div className="flex flex-col items-center text-center">
-        <Logo size={128} withWord={false} />
-        <Wordmark className="mt-3 text-[40px] leading-none" />
-        <p className="t-body mt-2 max-w-[260px] text-[15px] text-muted-ink">Nigerian food from kitchens near you, delivered.</p>
-      </div>
-      <section className="mt-9 rounded-[24px] bg-surface p-5 shadow-soft" aria-labelledby="welcome-h">
-        <div role="progressbar" aria-label="Sign up progress" aria-valuemin={1} aria-valuemax={2} aria-valuenow={step} className="mb-4 flex gap-1.5">
-          {[1, 2].map((n) => (
-            <span key={n} className={cx("h-1.5 flex-1 rounded-full transition-colors duration-300", n <= step ? "bg-green" : "bg-line")} />
+
+  if (step === "intro")
+    return (
+      <main className="animate-page mx-auto flex min-h-dvh w-full max-w-md flex-col pb-[calc(env(safe-area-inset-bottom)+20px)]">
+        {/* Food first: four real dishes in a staggered mosaic */}
+        <div aria-hidden className="grid grid-cols-2 gap-2.5 px-3 pt-[calc(env(safe-area-inset-top)+12px)]">
+          {[0, 1].map((col) => (
+            <div key={col} className={cx("flex flex-col gap-2.5", col === 1 && "pt-9")}>
+              {MOSAIC.filter((_, i) => i % 2 === col).map((m, i) => (
+                <div key={m.src} className={cx("relative overflow-hidden rounded-[22px] bg-peach", (col + i) % 2 === 0 ? "aspect-[3/4] max-h-[38vh] w-full [@media(max-height:700px)]:max-h-[24vh]" : "aspect-[4/5] max-h-[30vh] w-full [@media(max-height:700px)]:max-h-[18vh]")}>
+                  <Image src={m.src} alt={m.alt} fill priority sizes="200px" className="object-cover" />
+                </div>
+              ))}
+            </div>
           ))}
         </div>
-        {step === 1 ? (
-          <form
-            noValidate
-            className="mt-1.5 flex flex-col gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setTried(true);
-              if (!errors.name && !errors.phone) setStep(2);
-            }}
-          >
-            <h1 id="welcome-h" className="t-section text-ink">
-              What should we call you?
-            </h1>
-            <Field label="First name" id="w-name" error={tried ? errors.name : ""}>
-              <TextInput id="w-name" error={tried ? errors.name : ""} value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" />
-            </Field>
-            <Field label="Phone number" id="w-phone" hint="Your rider calls this number when they arrive." error={tried ? errors.phone : ""}>
-              <TextInput id="w-phone" error={tried ? errors.phone : ""} value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" placeholder="0803 123 4567" />
-            </Field>
-            <Button type="submit" size="lg">
-              Continue
+
+        <section className="relative z-10 -mt-14 flex flex-1 flex-col rounded-t-[30px] bg-cream px-6 pt-7" aria-labelledby="intro-h">
+          <Wordmark className="text-[26px] font-extrabold leading-none" />
+          <h1 id="intro-h" className="mt-3 text-[30px] font-bold leading-[1.12] tracking-[-0.015em] text-ink">
+            Nigerian food from kitchens near you.
+          </h1>
+          <p className="t-body mt-3 text-[15px] text-muted-ink">Jollof, suya, amala and more. Order in a few taps and pay when it arrives.</p>
+          <div className="mt-auto pt-8">
+            <Button size="lg" className="w-full" onClick={() => setStep("details")}>
+              Get started
             </Button>
-          </form>
-        ) : (
-          <div className="mt-1.5 flex flex-col gap-4">
-            <h1 id="welcome-h" className="t-section text-ink">
-              Where should we deliver, {name.trim().split(" ")[0]}?
-            </h1>
-            <AddressForm
-              submitLabel="Start ordering"
-              onSave={(address) =>
-                dispatch({ type: "signIn", profile: { name: name.trim(), phone: phone.trim(), photo: null, preferredPayment: "pay_on_delivery" }, address })
-              }
-            />
-            <button onClick={() => setStep(1)} className="t-button min-h-11 text-green">
-              Back
-            </button>
+            <p className="t-support mt-3 text-center text-muted-ink">No password needed. Your details stay on this phone.</p>
           </div>
-        )}
-      </section>
+        </section>
+      </main>
+    );
+
+  return (
+    <main className="animate-page mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-[calc(env(safe-area-inset-top)+12px)]">
+      <button onClick={() => setStep("intro")} aria-label="Back" className="-ml-2 grid size-11 place-items-center rounded-full text-ink hover:bg-surface">
+        <ArrowLeft className="size-[22px]" />
+      </button>
+      <h1 className="mt-3 text-[28px] font-bold leading-tight tracking-[-0.015em] text-ink">Let&rsquo;s get your food to you</h1>
+      <p className="t-body mt-1.5 text-[15px] text-muted-ink">Two quick things and you&rsquo;re in.</p>
+
+      <form
+        noValidate
+        className="mt-7 flex flex-1 flex-col gap-6"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setTried(true);
+          if (Object.values(errors).some(Boolean)) return;
+          dispatch({
+            type: "signIn",
+            profile: { name: name.trim(), phone: "", photo: null, preferredPayment: "pay_on_delivery" },
+            address: { id: newId(), label: "Home", line: line.trim(), area: chosenArea, city: "Abeokuta" },
+          });
+        }}
+      >
+        <Field label="Your first name" id="w-name" error={tried ? errors.name : ""}>
+          <TextInput id="w-name" error={tried ? errors.name : ""} value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" />
+        </Field>
+
+        <fieldset className="flex flex-col gap-2.5">
+          <legend className="t-field mb-2.5 text-ink">Your area in Abeokuta</legend>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Area">
+            {[...AREAS, "Other"].map((a) => {
+              const on = area === a;
+              return (
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  key={a}
+                  onClick={() => setArea(a)}
+                  className={cx(
+                    "inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-[14px] font-medium transition-colors",
+                    on ? "bg-green text-white" : "bg-surface text-ink shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-peach/60",
+                  )}
+                >
+                  {on && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
+                  {a}
+                </button>
+              );
+            })}
+          </div>
+          {area === "Other" && (
+            <TextInput id="w-area" aria-label="Type your area" value={otherArea} onChange={(e) => setOtherArea(e.target.value)} placeholder="Type your area" autoFocus />
+          )}
+          {tried && errors.area && (
+            <p role="alert" className="t-support text-danger">
+              {errors.area}
+            </p>
+          )}
+          <p className="t-support flex items-center gap-1.5 text-muted-ink">
+            <MapPin className="size-3.5 shrink-0 text-orange-strong" aria-hidden /> Foodie delivers in Abeokuta for now.
+          </p>
+        </fieldset>
+
+        <Field label="Street and house number" id="w-line" error={tried ? errors.line : ""}>
+          <TextInput id="w-line" error={tried ? errors.line : ""} value={line} onChange={(e) => setLine(e.target.value)} autoComplete="address-line1" placeholder="12 Olorunsogo Street" />
+        </Field>
+
+        <div className="mt-auto pt-4">
+          <Button type="submit" size="lg" className="w-full">
+            Start ordering
+          </Button>
+        </div>
+      </form>
     </main>
   );
 }
