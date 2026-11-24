@@ -57,7 +57,8 @@ export type MenuItem = {
   ratingCount: number;
   available: boolean;
   bestSeller: boolean;
-  photo: Photo;
+  /** Only dishes with a strong photo have one. The rest show as text. */
+  photo?: Photo;
   options: OptionGroup[];
 };
 

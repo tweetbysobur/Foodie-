@@ -1,14 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Nunito, Plus_Jakarta_Sans } from "next/font/google";
+import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-/** Primary: headings, names, prices, buttons, labels. */
-const jakarta = Plus_Jakarta_Sans({ variable: "--font-jakarta", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
-/** Secondary: descriptions and supporting text. */
-const dm = DM_Sans({ variable: "--font-dm", subsets: ["latin"], weight: ["400", "500"] });
-/** Wordmark only: rounded, bold, friendly. */
-const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"], weight: ["900"] });
+/** Display: wordmark, headings, dish names, prices. */
+const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], weight: ["600", "700", "800"] });
+/** Text: body, labels, buttons, navigation. */
+const dm = DM_Sans({ variable: "--font-dm", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
   title: "Foodie",
@@ -25,7 +23,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-NG" className={`${jakarta.variable} ${dm.variable} ${nunito.variable}`}>
+    <html lang="en-NG" className={`${bricolage.variable} ${dm.variable}`}>
       <body className="min-h-dvh">
         <Providers>{children}</Providers>
       </body>

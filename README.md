@@ -57,8 +57,12 @@ Swap each function body in `api.ts` for a Supabase query and keep the return typ
 
 From Wikimedia Commons under open licences. Credits show in the app under Profile, Photo credits, and in `src/lib/mock-data.ts`. Keep the credits if you keep the photos.
 
-## Design system
+## Design system: "Buka board"
 
-- Type: Plus Jakarta Sans for headings, names, prices, buttons and labels. DM Sans for descriptions and supporting text. Nunito Black for the Foodie wordmark only. Scale utilities (`t-display`, `t-page`, `t-section`, `t-card`, `t-body`, `t-support`, `t-button`, `t-price`, `t-nav`) live in `src/app/globals.css`.
-- Components and their states (buttons, inputs, chips, sheets, empty and error states) live in `src/components/ui.tsx`.
-- Motion is short and tied to state changes, and switches off under reduced motion.
+The look comes from Nigerian buka menu boards: dishes as printed lines with dotted leaders to the price, big tight headings, flat surfaces, rules instead of cards.
+
+- Type: Bricolage Grotesque for the wordmark, headings, dish names and prices. DM Sans for body, labels, buttons and navigation.
+- Shape: 6px corners at most, no card shadows, flat tab bar with a hairline.
+- Colour: forest green, burnt orange (#D94B18) for emphasis, cream ground. Contrast is measured and noted in `src/app/globals.css`.
+- Photos: only the seven strongest dish photos are used. Other dishes show as text rows. Replace or add photos in `public/food/` and `src/lib/mock-data.ts`.
+- Scale utilities (`t-display`, `t-page`, `t-section`, `t-card`, `t-body`, `t-support`, `t-button`, `t-price`, `t-nav`) live in `src/app/globals.css`; components and their states in `src/components/ui.tsx`.

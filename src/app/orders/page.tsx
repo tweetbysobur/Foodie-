@@ -1,39 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { clockTime, naira, shortDate } from "@/lib/format";
 import { STATUS_STEPS, orderStatus, type StatusView } from "@/lib/order-status";
-import type { Order } from "@/lib/types";
 import { useNow, useStore } from "@/store/app-store";
 import { useCatalog } from "@/store/catalog";
-import { Button, Empty, FoodImage, PageHeader, SectionTitle, cx } from "@/components/ui";
+import { BoardHeading, Empty, PageHeader, cx } from "@/components/ui";
 import { useReorder } from "@/components/reorder";
 
-function StatusText({ v }: { v: StatusView }) {
-  if (v.kind === "cancelled")
-    return (
-      <span className="t-support inline-flex items-center gap-1.5 font-medium text-danger">
-        <span className="size-2 rounded-full bg-danger" /> Cancelled
-      </span>
-    );
-  return (
-    <span className="t-support inline-flex items-center gap-1.5 font-medium text-ink">
-      <span className={cx("size-2 rounded-full", v.kind === "delivered" ? "bg-green" : "bg-orange")} /> {v.step.label}
-    </span>
-  );
-}
-
-function Thumbs({ order }: { order: Order }) {
-  const { items } = useCatalog();
-  return (
-    <div className="flex -space-x-3">
-      {order.lines.slice(0, 3).map((l, i) => {
-        const item = items.get(l.itemId);
-        return item ? <FoodImage key={i} photo={item.photo} sizes="48px" className="size-12 rounded-full ring-[3px] ring-cream" /> : null;
-      })}
-    </div>
-  );
+function statusLabel(v: StatusView) {
+  return v.kind === "cancelled" ? "Cancelled" : v.step.label;
 }
 
 export default function OrdersPage() {
@@ -46,83 +23,74 @@ export default function OrdersPage() {
   const past = withStatus.filter(({ v }) => v.kind !== "active");
 
   return (
-    <main className="pb-nav flex flex-col gap-8 px-5 pt-[calc(env(safe-area-inset-top)+20px)] md:mx-auto md:w-full md:max-w-3xl md:px-0 md:pt-10">
+    <main className="pb-nav px-5 pt-[calc(env(safe-area-inset-top)+16px)] md:mx-auto md:w-full md:max-w-3xl md:px-0 md:pt-10">
       <PageHeader title="Orders" back={false} />
       {state.orders.length === 0 ? (
         <Empty
-          title="No orders yet"
+          title="No orders yet."
           body="Place an order and you can follow it here, then reorder it in one tap."
           action={
-            <Link href="/" className="t-button inline-flex h-11 items-center rounded-full bg-orange-strong px-5 text-white hover:bg-orange-press">
-              Browse food
+            <Link href="/" className="t-button inline-flex h-11 items-center rounded-[6px] bg-orange-strong px-4 text-white hover:bg-orange-press">
+              See today&rsquo;s pots
             </Link>
           }
         />
       ) : (
-        <>
+        <div className="mt-8 flex flex-col gap-10">
           {active.length > 0 && (
             <section aria-labelledby="active-h" className="flex flex-col gap-3">
-              <SectionTitle id="active-h">In progress</SectionTitle>
+              <h2 id="active-h" className="sr-only">
+                In progress
+              </h2>
               {active.map(({ o, v }) => (
-                <Link
-                  key={o.id}
-                  href={`/orders/${o.id}`}
-                  className="flex flex-col gap-4 rounded-[24px] bg-green p-5 text-white shadow-float transition-colors hover:bg-green-deep"
-                  aria-label={`Order ${o.reference}, ${v.kind === "active" ? v.step.label : ""}. Track order`}
-                >
+                <Link key={o.id} href={`/orders/${o.id}`} className="group flex flex-col gap-4 rounded-[6px] bg-green p-5 text-cream transition-colors hover:bg-green-deep">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="t-support text-white/80">Arriving between</p>
-                      <p className="t-page tabular text-white">
-                        {clockTime(o.placedAt + o.etaMinutes[0] * 60000)} - {clockTime(o.placedAt + o.etaMinutes[1] * 60000)}
-                      </p>
-                    </div>
-                    <ChevronRight className="mt-2 size-5 text-white/80" aria-hidden />
+                    <p className="text-[15px] font-semibold text-cream/85">
+                      {o.reference} · {o.vendorIds.map((id) => catalog.vendors.get(id)?.name).join(", ")}
+                    </p>
+                    <ArrowRight className="size-5 shrink-0 transition-transform group-hover:translate-x-0.5" aria-hidden />
                   </div>
+                  <p className="font-[family-name:var(--font-display)] text-[40px] font-extrabold leading-none tracking-[-0.035em] tabular-nums">
+                    {clockTime(o.placedAt + o.etaMinutes[0] * 60000)}
+                    <span className="text-cream/70">-</span>
+                    {clockTime(o.placedAt + o.etaMinutes[1] * 60000)}
+                  </p>
                   <div aria-hidden className="flex gap-1">
                     {STATUS_STEPS.map((s, i) => (
-                      <span key={s.id} className={cx("h-1.5 flex-1 rounded-full", i <= v.index ? "bg-orange" : "bg-white/20")} />
+                      <span key={s.id} className={cx("h-1 flex-1", i <= v.index ? "bg-orange" : "bg-cream/25")} />
                     ))}
                   </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="t-card truncate text-white">{v.kind === "active" ? v.step.label : ""}</p>
-                      <p className="t-support truncate text-white/80">
-                        {o.reference} · {o.vendorIds.map((id) => catalog.vendors.get(id)?.name).join(", ")}
-                      </p>
-                    </div>
-                    <Thumbs order={o} />
-                  </div>
+                  <p className="font-[family-name:var(--font-display)] text-[19px] font-bold tracking-[-0.01em]">{statusLabel(v)}</p>
                 </Link>
               ))}
             </section>
           )}
 
           {past.length > 0 && (
-            <section aria-labelledby="past-h" className="flex flex-col gap-3">
-              <h2 id="past-h" className="t-section text-ink">Past orders</h2>
-              <ul className="grid grid-cols-1 border-t-2 border-ink/80">
+            <section aria-labelledby="past-h">
+              <BoardHeading id="past-h">Past orders</BoardHeading>
+              <ul>
                 {past.map(({ o, v }) => (
-                  <li key={o.id} className="flex items-center gap-3 border-b border-line py-4">
-                    <Link href={`/orders/${o.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-                      <Thumbs order={o} />
-                      <span className="min-w-0 flex-1">
-                        <StatusText v={v} />
-                        <span className="t-card block truncate text-[15px] text-ink">{o.lines.map((l) => `${l.qty}x ${l.name}`).join(", ")}</span>
-                        <span className="t-support block text-muted-ink">
-                          {shortDate(o.placedAt)} · <span className="tabular">{naira(o.total)}</span>
-                        </span>
+                  <li key={o.id} className="flex items-center gap-3 border-b border-dashed border-leader py-4">
+                    <Link href={`/orders/${o.id}`} className="min-w-0 flex-1">
+                      <span className="flex items-baseline gap-2 font-[family-name:var(--font-display)] text-[17px] font-bold tracking-[-0.01em] text-ink">
+                        <span className="min-w-0 truncate">{o.lines.map((l) => `${l.qty}x ${l.name}`).join(", ")}</span>
+                        <span aria-hidden className="leader" />
+                        <span className="tabular shrink-0">{naira(o.total)}</span>
+                      </span>
+                      <span className="t-support block text-muted-ink">
+                        <span className={cx("font-semibold", v.kind === "cancelled" ? "text-danger" : "text-green")}>{statusLabel(v)}</span> · {shortDate(o.placedAt)} · {o.reference}
                       </span>
                     </Link>
-                    <Button variant="secondary" className="h-10 min-h-0 shrink-0 px-4 text-[13px]" onClick={() => reorder(o)} ariaLabel={`Reorder ${o.reference}`}>
+                    <button onClick={() => reorder(o)} className="t-button h-9 shrink-0 rounded-[6px] px-3 text-green ring-[1.5px] ring-inset ring-ink/70 hover:bg-board/60" aria-label={`Reorder ${o.reference}`}>
                       Reorder
-                    </Button>
+                    </button>
                   </li>
                 ))}
               </ul>
             </section>
           )}
-        </>
+        </div>
       )}
     </main>
   );

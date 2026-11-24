@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Info, Store, Trash2 } from "lucide-react";
 import { naira } from "@/lib/format";
 import { cartTotals, optionLabels, unitPrice } from "@/lib/pricing";
 import type { CartLine } from "@/lib/types";
 import { useStore } from "@/store/app-store";
 import { useCatalog } from "@/store/catalog";
 import { useToast } from "@/store/toast";
-import { Button, Empty, ErrorState, FoodImage, PageHeader, Sheet, Skeleton, Stepper, inputClass } from "@/components/ui";
+import { BoardHeading, Button, Empty, ErrorState, PageHeader, Sheet, Skeleton, Stepper, inputClass } from "@/components/ui";
 import { Summary } from "@/components/summary";
 
 export default function CartPage() {
@@ -22,24 +21,22 @@ export default function CartPage() {
   const [confirmClear, setConfirmClear] = useState(false);
   const t = cartTotals(state.cart, catalog.items, catalog.vendors, state.promoCode, state.orders.length);
 
-  // Group lines by vendor, in the order vendors were first added.
   const groups = new Map<string, CartLine[]>();
   for (const l of state.cart) {
     const v = catalog.items.get(l.itemId)?.vendorId;
-    if (!v) continue;
-    groups.set(v, [...(groups.get(v) ?? []), l]);
+    if (v) groups.set(v, [...(groups.get(v) ?? []), l]);
   }
   const vendorFees = [...groups.keys()].map((id) => ({ name: catalog.vendors.get(id)?.name ?? "Vendor", fee: catalog.vendors.get(id)?.deliveryFee ?? 0 }));
 
   return (
-    <main className="flex flex-col gap-6 px-5 pb-[calc(124px+env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+16px)] md:px-0 md:pb-20 md:pt-10">
+    <main className="px-5 pb-[calc(100px+env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+12px)] md:px-0 md:pb-20 md:pt-8">
       <PageHeader
         title="Your cart"
-        subtitle={t.count > 0 ? `${t.count} ${t.count === 1 ? "item" : "items"} from ${groups.size} ${groups.size === 1 ? "vendor" : "vendors"}` : undefined}
+        subtitle={t.count > 0 ? `${t.count} ${t.count === 1 ? "item" : "items"} from ${groups.size} ${groups.size === 1 ? "kitchen" : "kitchens"}` : undefined}
         right={
           state.cart.length > 0 && (
-            <button onClick={() => setConfirmClear(true)} className="t-button min-h-11 px-2 text-green">
-              Clear
+            <button onClick={() => setConfirmClear(true)} className="t-button min-h-11 px-1 text-green">
+              Clear all
             </button>
           )
         }
@@ -48,24 +45,23 @@ export default function CartPage() {
       {catalog.state.status === "error" ? (
         <ErrorState message={catalog.state.message} onRetry={catalog.retry} />
       ) : catalog.state.status === "loading" ? (
-        <Skeleton className="h-56 w-full" />
+        <Skeleton className="mt-6 h-56 w-full" />
       ) : state.cart.length === 0 ? (
         <Empty
-          title="Your cart is empty"
-          body="Add a dish from Home or Search and it shows up here."
+          title="Your cart is empty."
+          body="Add a dish from the board on Home, or search for one."
           action={
-            <Link href="/" className="t-button inline-flex h-11 items-center rounded-full bg-orange-strong px-5 text-white hover:bg-orange-press">
-              Browse food
+            <Link href="/" className="t-button inline-flex h-11 items-center rounded-[6px] bg-orange-strong px-4 text-white hover:bg-orange-press">
+              See today&rsquo;s pots
             </Link>
           }
         />
       ) : (
-        <div className="flex flex-col gap-6 md:grid md:grid-cols-[1fr_380px] md:items-start md:gap-10">
-          <div className="flex flex-col gap-8">
+        <div className="mt-6 flex flex-col gap-10 md:grid md:grid-cols-[1fr_380px] md:items-start md:gap-14">
+          <div className="flex flex-col gap-9">
             {groups.size > 1 && (
-              <p className="t-body flex gap-2.5 text-ink">
-                <Info className="mt-0.5 size-[18px] shrink-0 text-green" aria-hidden />
-                Your food comes from {groups.size} kitchens, so it arrives as {groups.size} separate deliveries. Each one has its own delivery fee.
+              <p className="t-body text-[15px] text-ink">
+                Your food comes from <strong className="font-semibold">{groups.size} kitchens</strong>, so it arrives as {groups.size} separate deliveries, each with its own delivery fee.
               </p>
             )}
 
@@ -73,54 +69,40 @@ export default function CartPage() {
               const vendor = catalog.vendors.get(vendorId);
               return (
                 <section key={vendorId} aria-label={`From ${vendor?.name}`}>
-                  <header className="flex items-center gap-3 border-b-2 border-ink/80 pb-2.5">
-                    <Store className="size-5 shrink-0 text-green" aria-hidden />
-                    <div className="min-w-0 flex-1">
-                      <h2 className="t-card truncate text-ink">{vendor?.name}</h2>
-                      <p className="t-support text-muted-ink">
-                        Delivery {naira(vendor?.deliveryFee ?? 0)} · {vendor?.deliveryMinutes[0]}-{vendor?.deliveryMinutes[1]} min
-                      </p>
-                    </div>
-                  </header>
-                  <ul className="divide-y divide-line">
+                  <BoardHeading action={<span className="t-support pb-1 text-muted-ink">{vendor?.deliveryMinutes[0]}-{vendor?.deliveryMinutes[1]} min</span>}>{vendor?.name}</BoardHeading>
+                  <ul>
                     {lines.map((l) => {
                       const item = catalog.items.get(l.itemId)!;
                       const labels = optionLabels(item, l.optionIds);
                       const each = unitPrice(item, l.optionIds);
                       return (
-                        <li key={l.key} className="flex flex-col gap-2 py-4">
-                          <div className="flex gap-3">
-                            <Link href={`/food/${item.id}`} className="shrink-0 rounded-[14px]">
-                              <FoodImage photo={item.photo} sizes="72px" className="size-[72px] rounded-[14px]" />
-                            </Link>
-                            <div className="min-w-0 flex-1">
-                              <p className="t-card truncate text-ink">{item.name}</p>
-                              {labels.length > 0 && <p className="t-support line-clamp-2 text-muted-ink">{labels.join(", ")}</p>}
-                              <p className="t-price mt-1 text-[16px] text-ink">
-                                {naira(each * l.qty)}
-                                {l.qty > 1 && <span className="t-support ml-1.5 font-normal text-muted-ink">{naira(each)} each</span>}
-                              </p>
-                            </div>
+                        <li key={l.key} className="flex flex-col gap-2 border-b border-dashed border-leader py-4">
+                          <Link href={`/food/${item.id}`} className="flex items-baseline gap-2 font-[family-name:var(--font-display)] text-[17px] font-bold tracking-[-0.01em] text-ink">
+                            <span className="min-w-0 truncate">{item.name}</span>
+                            <span aria-hidden className="leader" />
+                            <span className="tabular shrink-0">{naira(each * l.qty)}</span>
+                          </Link>
+                          {(labels.length > 0 || l.qty > 1) && (
+                            <p className="t-support -mt-1 text-muted-ink">
+                              {labels.join(", ")}
+                              {labels.length > 0 && l.qty > 1 ? " · " : ""}
+                              {l.qty > 1 && `${naira(each)} each`}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4">
+                            <Stepper qty={l.qty} min={1} onChange={(q) => dispatch({ type: "setQty", key: l.key, qty: q })} name={item.name} />
+                            <button onClick={() => setOpenNote(openNote === l.key ? null : l.key)} aria-expanded={openNote === l.key} className="t-support min-h-11 min-w-0 flex-1 truncate text-left font-semibold text-green">
+                              {l.note ? `“${l.note}”` : "Add a note"}
+                            </button>
                             <button
                               onClick={() => {
                                 dispatch({ type: "removeLine", key: l.key });
                                 toast(`Removed ${item.name}`);
                               }}
-                              aria-label={`Remove ${item.name}`}
-                              className="grid size-10 shrink-0 place-items-center rounded-full text-muted-ink transition-colors hover:bg-danger-soft hover:text-danger"
+                              className="t-support min-h-11 shrink-0 font-semibold text-danger"
                             >
-                              <Trash2 className="size-[18px]" />
+                              Remove
                             </button>
-                          </div>
-                          <div className="flex items-center justify-between gap-3">
-                            <button
-                              onClick={() => setOpenNote(openNote === l.key ? null : l.key)}
-                              aria-expanded={openNote === l.key}
-                              className="t-support min-h-11 min-w-0 truncate text-left font-medium text-green"
-                            >
-                              {l.note ? `Note: ${l.note}` : "+ Special instructions"}
-                            </button>
-                            <Stepper size="sm" qty={l.qty} onChange={(q) => dispatch({ type: "setQty", key: l.key, qty: q })} name={item.name} />
                           </div>
                           {openNote === l.key && (
                             <textarea
@@ -129,7 +111,7 @@ export default function CartPage() {
                               value={l.note}
                               onChange={(e) => dispatch({ type: "setNote", key: l.key, note: e.target.value.slice(0, 160) })}
                               placeholder="Less pepper, no onions"
-                              aria-label={`Special instructions for ${item.name}`}
+                              aria-label={`Note for ${item.name}`}
                               className={`${inputClass} py-3`}
                             />
                           )}
@@ -142,13 +124,12 @@ export default function CartPage() {
             })}
           </div>
 
-          <aside className="flex flex-col gap-3 md:sticky md:top-[104px] md:rounded-[28px] md:bg-surface md:p-7" aria-label="Order summary">
-            
+          <aside className="flex flex-col gap-4 md:sticky md:top-[104px]" aria-label="Order summary">
             <Summary totals={t} promoCode={state.promoCode} vendorFees={vendorFees} />
-            {!state.promoCode && state.orders.length === 0 && <p className="t-support px-1 text-muted-ink">Have a promo code? Add it at checkout.</p>}
-            <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-cream/95 px-5 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+            {!state.promoCode && state.orders.length === 0 && <p className="t-support text-muted-ink">Promo code? Add it at checkout.</p>}
+            <div className="fixed inset-x-0 bottom-0 z-30 border-t-2 border-ink bg-cream px-5 pb-[calc(12px+env(safe-area-inset-bottom))] pt-3 md:static md:border-0 md:bg-transparent md:p-0">
               <Button size="lg" className="w-full" onClick={() => router.push("/checkout")}>
-                Go to checkout · <span className="tabular">{naira(t.total)}</span>
+                Checkout · <span className="tabular">{naira(t.total)}</span>
               </Button>
             </div>
           </aside>

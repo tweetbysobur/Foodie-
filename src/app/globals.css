@@ -29,48 +29,54 @@
   --color-danger: #b4381a;
   --color-danger-soft: #fbe4dc;
 
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-dm), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
-  --font-wordmark: var(--font-nunito), var(--font-jakarta), ui-rounded, sans-serif;
+  --font-sans: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-bricolage), var(--font-dm), ui-sans-serif, sans-serif;
+  --font-wordmark: var(--font-bricolage), ui-sans-serif, sans-serif;
 
-  --radius-card: 20px;
-  --radius-tile: 16px;
+  /* Buka board: square-ish, printed, never bubbly */
+  --radius-card: 6px;
+  --radius-tile: 6px;
+  --color-leader: #b9ab99;
+  --color-burnt-ink: #b93d0e; /* burnt orange as text on cream: 5.18:1 */
+  --color-board: #e8ddcf; /* hover and pressed fills only: muted text on it is 3.84:1, so no small text */
 
   --shadow-soft: 0 6px 20px rgb(53 77 60 / 0.08);
   --shadow-float: 0 10px 30px rgb(53 77 60 / 0.16);
 }
 
 /*
-  Type scale. Plus Jakarta Sans: headings, names, prices, buttons, labels, navigation.
-  DM Sans: reading text (descriptions, supporting copy, instructions).
+  Type scale. Bricolage Grotesque: wordmark, headings, dish names, prices (the menu board voice).
+  DM Sans: everything you read or press (body, labels, buttons, navigation).
   Letter spacing has three values only: headings -0.01em, uppercase labels +0.06em, the rest 0.
 */
 @utility t-display {
-  font-family: var(--font-sans);
-  font-size: 32px;
+  font-family: var(--font-display);
+  font-size: 44px;
   font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
 }
 @utility t-page {
-  font-family: var(--font-sans);
-  font-size: 26px;
+  font-family: var(--font-display);
+  font-size: 30px;
   font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 @utility t-section {
-  font-family: var(--font-sans);
-  font-size: 20px;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 @utility t-card {
-  font-family: var(--font-sans);
-  font-size: 16px;
+  font-family: var(--font-display);
+  font-size: 17px;
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 @utility t-body {
   font-family: var(--font-body);
@@ -91,9 +97,9 @@
   line-height: 1.2;
 }
 @utility t-price {
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
 }
@@ -261,4 +267,12 @@ select {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Dotted leader between a dish name and its price, like a printed menu board */
+.leader {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 2px dotted var(--color-leader);
+  transform: translateY(-5px);
 }
