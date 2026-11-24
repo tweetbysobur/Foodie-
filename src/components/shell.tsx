@@ -10,13 +10,13 @@ import type { Address } from "@/lib/types";
 import { newId, useStore } from "@/store/app-store";
 import { useCatalog } from "@/store/catalog";
 import { useToast } from "@/store/toast";
-import { Button, Choice, Field, Sheet, TextInput, Wordmark, cx } from "./ui";
+import { Button, Field, Logo, Sheet, TextInput, Wordmark, cx } from "./ui";
 
 const NAV = [
   { href: "/", label: "Home", Icon: House },
   { href: "/search", label: "Search", Icon: Search },
   { href: "/orders", label: "Orders", Icon: ReceiptText },
-  { href: "/favourites", label: "Saved", Icon: Heart },
+  { href: "/favourites", label: "Favourites", Icon: Heart },
   { href: "/profile", label: "Profile", Icon: UserRound },
 ];
 
@@ -32,23 +32,25 @@ function useCartSummary() {
   return cartTotals(state.cart, items, vendors, state.promoCode, state.orders.length);
 }
 
-/** Flat tab bar with a hairline, like the bottom of a printed menu. Cart sits on it as a green strip. */
 export function BottomNav() {
   const path = usePathname();
   const totals = useCartSummary();
   if (FULL_SCREEN.some((r) => r.test(path))) return null;
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 md:hidden">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex flex-col items-center gap-2.5 px-3 pb-[calc(12px+env(safe-area-inset-bottom))] md:hidden">
       {totals.count > 0 && (
-        <Link href="/cart" className="flex h-[52px] items-center gap-3 bg-green px-5 text-white transition-colors active:bg-green-deep">
-          <ShoppingBag key={totals.count} className="animate-bump size-5 shrink-0 text-orange" aria-hidden />
-          <span className="flex-1 text-[15px] font-semibold">
+        <Link
+          href="/cart"
+          className="pointer-events-auto flex min-h-[50px] w-full max-w-md items-center gap-3 rounded-full bg-green px-5 text-white shadow-float transition-transform active:scale-[0.98]"
+        >
+          <ShoppingBag key={totals.count} className="animate-bump size-[22px] shrink-0 text-orange" aria-hidden />
+          <span className="t-button flex-1 text-[15px]">
             View cart · {totals.count} {totals.count === 1 ? "item" : "items"}
           </span>
-          <span className="tabular font-[family-name:var(--font-display)] text-[18px] font-bold">{naira(totals.subtotal)}</span>
+          <span className="t-price text-[16px]">{naira(totals.subtotal)}</span>
         </Link>
       )}
-      <nav aria-label="Main" className="flex border-t border-line bg-cream pb-[env(safe-area-inset-bottom)]">
+      <nav aria-label="Main" className="pointer-events-auto flex w-full max-w-md justify-between rounded-[26px] bg-surface px-2 py-1 shadow-float">
         {NAV.map(({ href, label, Icon }) => {
           const on = isActive(path, href);
           return (
@@ -56,10 +58,10 @@ export function BottomNav() {
               key={href}
               href={href}
               aria-current={on ? "page" : undefined}
-              className={cx("t-nav relative flex h-[60px] flex-1 flex-col items-center justify-center gap-1 text-[11.5px] transition-colors", on ? "text-green" : "text-muted-ink")}
+              className={cx("t-nav relative flex min-h-[54px] flex-1 flex-col items-center justify-center gap-1 transition-colors", on ? "font-semibold text-orange-strong" : "text-muted-ink hover:text-green")}
             >
-              <span aria-hidden className={cx("absolute inset-x-5 top-0 h-[3px]", on ? "bg-burnt" : "bg-transparent")} />
-              <Icon className="size-[22px]" strokeWidth={on ? 2.4 : 1.8} aria-hidden />
+              <span aria-hidden className={cx("absolute top-0.5 size-1 rounded-full", on ? "bg-orange" : "bg-transparent")} />
+              <Icon className={cx("size-[22px]", on ? "text-orange" : "text-muted")} fill={on && label !== "Search" ? "currentColor" : "none"} strokeWidth={on ? 2 : 1.7} aria-hidden />
               {label}
             </Link>
           );
@@ -73,33 +75,33 @@ export function TopNav() {
   const path = usePathname();
   const totals = useCartSummary();
   return (
-    <header className="sticky top-0 z-30 hidden border-b-2 border-ink bg-cream md:block">
-      <div className="mx-auto flex h-[72px] max-w-6xl items-center gap-8 px-8">
-        <Link href="/" aria-label="Foodie home" className="rounded-[6px]">
-          <Wordmark className="text-[30px]" />
+    <header className="sticky top-0 z-30 hidden border-b border-line bg-cream/95 backdrop-blur md:block">
+      <div className="mx-auto flex h-[72px] max-w-6xl items-center gap-4 px-8 lg:gap-8">
+        <Link href="/" aria-label="Foodie home" className="rounded-xl">
+          <Logo size={40} />
         </Link>
-        <nav aria-label="Main" className="flex h-full items-stretch gap-6">
-          {NAV.map(({ href, label }) => {
+        <nav aria-label="Main" className="flex items-center gap-1">
+          {NAV.map(({ href, label, Icon }) => {
             const on = isActive(path, href);
             return (
               <Link
                 key={href}
                 href={href}
                 aria-current={on ? "page" : undefined}
-                className={cx("relative flex items-center text-[15px] font-semibold transition-colors", on ? "text-ink" : "text-muted-ink hover:text-ink")}
+                className={cx("inline-flex h-10 items-center gap-2 rounded-full px-3 text-[14px] font-semibold transition-colors lg:px-4", on ? "bg-sage text-green" : "text-muted-ink hover:bg-surface hover:text-green")}
               >
+                <Icon className={cx("hidden size-[18px] lg:block", on && "text-green")} aria-hidden />
                 {label}
-                <span aria-hidden className={cx("absolute inset-x-0 -bottom-[2px] h-[3px]", on ? "bg-burnt" : "bg-transparent")} />
               </Link>
             );
           })}
         </nav>
-        <Link href="/cart" className="t-button ml-auto inline-flex h-11 items-center gap-2 rounded-[6px] bg-green px-4 text-white transition-colors hover:bg-green-deep">
+        <Link href="/cart" className="t-button ml-auto inline-flex h-11 items-center gap-2 rounded-full bg-green px-5 text-white transition-colors hover:bg-green-deep">
           <ShoppingBag className="size-[18px] text-orange" aria-hidden />
           Cart
           {totals.count > 0 && (
-            <span key={totals.count} className="animate-bump tabular font-[family-name:var(--font-display)] text-[16px]">
-              · {naira(totals.subtotal)}
+            <span key={totals.count} className="animate-bump tabular rounded-full bg-orange-strong px-2 py-0.5 text-[12px]">
+              {totals.count}
             </span>
           )}
         </Link>
@@ -132,9 +134,16 @@ export function AddressForm({ initial, onSave, submitLabel }: { initial?: Addres
     >
       <div role="radiogroup" aria-label="Address label" className="flex gap-2">
         {["Home", "Work", "Other"].map((l) => (
-          <Choice key={l} active={label === l} onClick={() => setLabel(l)}>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={label === l}
+            key={l}
+            onClick={() => setLabel(l)}
+            className={cx("h-10 rounded-full px-4 text-[14px] font-semibold transition-colors", label === l ? "bg-green text-white" : "bg-cream text-green hover:bg-sage")}
+          >
             {l}
-          </Choice>
+          </button>
         ))}
       </div>
       <Field label="Street and house number" id="addr-line" error={tried ? errors.line : ""}>
@@ -176,12 +185,12 @@ export function AddressSheet({ onClose }: { onClose: () => void }) {
           }}
         />
       ) : (
-        <div className="flex flex-col gap-4">
-          <ul className="flex flex-col" role="radiogroup" aria-label="Saved addresses">
+        <div className="flex flex-col gap-3">
+          <ul className="flex flex-col gap-2" role="radiogroup" aria-label="Saved addresses">
             {state.addresses.map((a) => {
               const on = a.id === state.selectedAddressId;
               return (
-                <li key={a.id} className="flex items-center gap-1 border-b border-line">
+                <li key={a.id} className={cx("flex items-center gap-1 rounded-[var(--radius-tile)] p-1 pr-1.5 transition-colors", on ? "bg-sage" : "bg-cream")}>
                   <button
                     role="radio"
                     aria-checked={on}
@@ -189,7 +198,7 @@ export function AddressSheet({ onClose }: { onClose: () => void }) {
                       dispatch({ type: "selectAddress", id: a.id });
                       onClose();
                     }}
-                    className="flex min-h-16 min-w-0 flex-1 items-center gap-3 text-left"
+                    className="flex min-h-14 min-w-0 flex-1 items-center gap-3 rounded-[12px] px-3 text-left"
                   >
                     <span className={cx("grid size-5 shrink-0 place-items-center rounded-full border-2", on ? "border-green bg-green text-white" : "border-muted")}>
                       {on && <Check className="size-3" strokeWidth={3} />}
@@ -199,7 +208,7 @@ export function AddressSheet({ onClose }: { onClose: () => void }) {
                       <span className="t-support block truncate text-muted-ink">{formatAddress(a)}</span>
                     </span>
                   </button>
-                  <button onClick={() => setEditing(a)} aria-label={`Edit ${a.label} address`} className="grid size-10 place-items-center rounded-[6px] text-green hover:bg-board/60">
+                  <button onClick={() => setEditing(a)} aria-label={`Edit ${a.label} address`} className="grid size-10 place-items-center rounded-full text-green hover:bg-surface">
                     <Pencil className="size-4" />
                   </button>
                   {state.addresses.length > 1 && (
@@ -209,7 +218,7 @@ export function AddressSheet({ onClose }: { onClose: () => void }) {
                         toast("Address removed");
                       }}
                       aria-label={`Remove ${a.label} address`}
-                      className="grid size-10 place-items-center rounded-[6px] text-danger hover:bg-danger-soft"
+                      className="grid size-10 place-items-center rounded-full text-danger hover:bg-surface"
                     >
                       <Trash2 className="size-4" />
                     </button>
@@ -227,7 +236,7 @@ export function AddressSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** First visit: name and phone, then where to deliver. Saved on this device only. */
+/** First visit: name and phone, then the delivery address. Saved on this device only. */
 function Welcome() {
   const { dispatch } = useStore();
   const [name, setName] = useState("");
@@ -239,22 +248,22 @@ function Welcome() {
     phone: !validPhone(phone) ? "Enter a Nigerian number, for example 0803 123 4567." : "",
   };
   return (
-    <main className="animate-page mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-10 pt-[calc(env(safe-area-inset-top)+40px)]">
-      <Wordmark className="text-[64px] leading-[0.9]" />
-      <p className="mt-3 max-w-[300px] font-[family-name:var(--font-display)] text-[24px] font-bold leading-[1.1] tracking-[-0.02em] text-ink">
-        Nigerian food from <span className="text-burnt-ink">kitchens near you.</span>
-      </p>
-
-      <section className="mt-10 border-t-2 border-ink pt-5" aria-labelledby="welcome-h">
-        <div role="progressbar" aria-label="Sign up progress" aria-valuemin={1} aria-valuemax={2} aria-valuenow={step} className="mb-5 flex gap-1.5">
+    <main className="animate-page mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-10 pt-[calc(env(safe-area-inset-top)+48px)]">
+      <div className="flex flex-col items-center text-center">
+        <Logo size={128} withWord={false} />
+        <Wordmark className="mt-3 text-[40px] leading-none" />
+        <p className="t-body mt-2 max-w-[260px] text-[15px] text-muted-ink">Nigerian food from kitchens near you, delivered.</p>
+      </div>
+      <section className="mt-9 rounded-[24px] bg-surface p-5 shadow-soft" aria-labelledby="welcome-h">
+        <div role="progressbar" aria-label="Sign up progress" aria-valuemin={1} aria-valuemax={2} aria-valuenow={step} className="mb-4 flex gap-1.5">
           {[1, 2].map((n) => (
-            <span key={n} className={cx("h-1 flex-1 transition-colors duration-300", n <= step ? "bg-burnt" : "bg-line")} />
+            <span key={n} className={cx("h-1.5 flex-1 rounded-full transition-colors duration-300", n <= step ? "bg-green" : "bg-line")} />
           ))}
         </div>
         {step === 1 ? (
           <form
             noValidate
-            className="flex flex-col gap-4"
+            className="mt-1.5 flex flex-col gap-4"
             onSubmit={(e) => {
               e.preventDefault();
               setTried(true);
@@ -270,12 +279,12 @@ function Welcome() {
             <Field label="Phone number" id="w-phone" hint="Your rider calls this number when they arrive." error={tried ? errors.phone : ""}>
               <TextInput id="w-phone" error={tried ? errors.phone : ""} value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" inputMode="tel" autoComplete="tel" placeholder="0803 123 4567" />
             </Field>
-            <Button type="submit" size="lg" className="mt-1">
+            <Button type="submit" size="lg">
               Continue
             </Button>
           </form>
         ) : (
-          <div className="flex flex-col gap-4">
+          <div className="mt-1.5 flex flex-col gap-4">
             <h1 id="welcome-h" className="t-section text-ink">
               Where should we deliver, {name.trim().split(" ")[0]}?
             </h1>
@@ -285,7 +294,7 @@ function Welcome() {
                 dispatch({ type: "signIn", profile: { name: name.trim(), phone: phone.trim(), photo: null, preferredPayment: "pay_on_delivery" }, address })
               }
             />
-            <button onClick={() => setStep(1)} className="t-button min-h-11 self-start text-green">
+            <button onClick={() => setStep(1)} className="t-button min-h-11 text-green">
               Back
             </button>
           </div>
@@ -301,7 +310,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!state.profile) return <Welcome />;
   return (
     <>
-      <a href="#main" className="t-button sr-only z-50 rounded-[6px] bg-green px-4 py-2 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+      <a href="#main" className="t-button sr-only z-50 rounded-full bg-green px-4 py-2 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
         Skip to content
       </a>
       <TopNav />

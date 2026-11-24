@@ -1,22 +1,23 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowUpRight, Clock, Search as SearchIcon, SlidersHorizontal, X } from "lucide-react";
+import { Clock, Search as SearchIcon, SlidersHorizontal, Star, Store, TrendingUp, X } from "lucide-react";
 import type { CategoryId, MenuItem, Vendor } from "@/lib/types";
+import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { useStore } from "@/store/app-store";
 import { useCatalog } from "@/store/catalog";
-import { DishRow, DishRowSkeleton } from "@/components/food";
-import { BoardHeading, Button, Choice, Empty, ErrorState, PageHeader, Sheet, cx } from "@/components/ui";
+import { FoodRow, FoodRowSkeleton } from "@/components/food";
+import { Button, Chip, Empty, ErrorState, FoodImage, Sheet, cx } from "@/components/ui";
 
-type Sort = "relevance" | "price-asc" | "price-desc" | "rating" | "fastest";
 type Filters = { cat: CategoryId | "all"; price: "any" | "under3" | "3to7" | "over7"; maxMinutes: 0 | 30 | 45; minRating: 0 | 4 | 4.5; availableOnly: boolean; sort: Sort };
+type Sort = "relevance" | "price-asc" | "price-desc" | "rating" | "fastest";
 const NO_FILTERS: Filters = { cat: "all", price: "any", maxMinutes: 0, minRating: 0, availableOnly: false, sort: "relevance" };
 const SORTS: [Sort, string][] = [
   ["relevance", "Best match"],
   ["rating", "Top rated"],
-  ["fastest", "Fastest"],
-  ["price-asc", "Cheapest"],
-  ["price-desc", "Most expensive"],
+  ["fastest", "Fastest delivery"],
+  ["price-asc", "Price: low to high"],
+  ["price-desc", "Price: high to low"],
 ];
 const PRICES: [Filters["price"], string][] = [
   ["any", "Any price"],
@@ -80,25 +81,28 @@ export default function SearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, catalog.vendors, term, vendorId, filters],
   );
+
   const suggestions = useMemo(() => {
     if (!data || term.length < 2) return [];
     const vendors = data.vendors.filter((v) => v.name.toLowerCase().includes(term)).map((v) => ({ kind: "vendor" as const, label: v.name, id: v.id }));
     const dishes = data.menu.filter((m) => m.name.toLowerCase().includes(term)).map((m) => ({ kind: "dish" as const, label: m.name, id: m.id }));
     return [...vendors, ...dishes].slice(0, 6);
   }, [data, term]);
-  // Ranked by the menu's own review counts, the only popularity signal there is.
-  const popular = useMemo(() => (data ? [...data.menu].sort((a, b) => b.ratingCount - a.ratingCount).slice(0, 5) : []), [data]);
 
-  const active: { key: string; label: string; clear: () => void }[] = [];
-  if (filters.cat !== "all") active.push({ key: "cat", label: catLabel(filters.cat), clear: () => setFilters({ ...filters, cat: "all" }) });
-  if (filters.price !== "any") active.push({ key: "price", label: PRICES.find((p) => p[0] === filters.price)![1], clear: () => setFilters({ ...filters, price: "any" }) });
-  if (filters.maxMinutes) active.push({ key: "time", label: `Under ${filters.maxMinutes} min`, clear: () => setFilters({ ...filters, maxMinutes: 0 }) });
-  if (filters.minRating) active.push({ key: "rating", label: `Vendors ${filters.minRating.toFixed(1)}+`, clear: () => setFilters({ ...filters, minRating: 0 }) });
-  if (filters.availableOnly) active.push({ key: "avail", label: "Available now", clear: () => setFilters({ ...filters, availableOnly: false }) });
-  if (vendorId) active.push({ key: "vendor", label: catalog.vendors.get(vendorId)?.name ?? "Vendor", clear: () => setVendorId(null) });
-  const filterCount = active.length - (vendorId ? 1 : 0);
-  const browsing = !term && active.length === 0 && filters.sort === "relevance";
+  const matchedVendors = useMemo(() => (data && term.length >= 2 ? data.vendors.filter((v) => v.name.toLowerCase().includes(term)) : []), [data, term]);
+  // "Popular" comes from the menu's own rating counts, the only popularity signal there is.
+  const popular = useMemo(() => (data ? [...data.menu].sort((a, b) => b.ratingCount - a.ratingCount).slice(0, 6) : []), [data]);
 
+  const activeFilters: { key: string; label: string; clear: () => void }[] = [];
+  if (filters.cat !== "all") activeFilters.push({ key: "cat", label: catLabel(filters.cat), clear: () => setFilters({ ...filters, cat: "all" }) });
+  if (filters.price !== "any") activeFilters.push({ key: "price", label: PRICES.find((p) => p[0] === filters.price)![1], clear: () => setFilters({ ...filters, price: "any" }) });
+  if (filters.maxMinutes) activeFilters.push({ key: "time", label: `Under ${filters.maxMinutes} min`, clear: () => setFilters({ ...filters, maxMinutes: 0 }) });
+  if (filters.minRating) activeFilters.push({ key: "rating", label: `Vendors ${filters.minRating.toFixed(1)}+`, clear: () => setFilters({ ...filters, minRating: 0 }) });
+  if (filters.availableOnly) activeFilters.push({ key: "avail", label: "Available now", clear: () => setFilters({ ...filters, availableOnly: false }) });
+  if (vendorId) activeFilters.push({ key: "vendor", label: catalog.vendors.get(vendorId)?.name ?? "Vendor", clear: () => setVendorId(null) });
+  const filterCount = activeFilters.length - (vendorId ? 1 : 0);
+
+  const browsing = !term && activeFilters.length === 0;
   const commit = (t: string) => {
     setQ(t);
     dispatch({ type: "addSearch", term: t });
@@ -112,21 +116,23 @@ export default function SearchPage() {
   };
 
   return (
-    <main className="pb-nav px-5 pt-[calc(env(safe-area-inset-top)+16px)] md:mx-auto md:w-full md:max-w-3xl md:px-0 md:pt-10">
-      <PageHeader title="Search" back={false} />
-
-      {/* The search line: one strong rule, no box */}
-      <div className="sticky top-0 z-20 -mx-5 mt-4 bg-cream px-5 pb-2 pt-2 md:top-[72px] md:mx-0 md:px-0">
-        <div className="relative flex items-center gap-3">
+    <main className="pb-nav flex flex-col gap-7 md:mx-auto md:w-full md:max-w-4xl md:pt-6">
+      {/* Search field: the page's one big element */}
+      <div className="sticky top-0 z-20 bg-cream/95 px-5 pb-3 pt-[calc(env(safe-area-inset-top)+16px)] backdrop-blur md:top-[72px] md:px-0 md:pt-4">
+        <h1 className="t-page mb-3 text-ink">Search</h1>
+        <div className="relative flex items-center gap-2">
           <form
             role="search"
             onSubmit={(e) => {
               e.preventDefault();
               if (q.trim()) commit(q.trim());
             }}
-            className={cx("flex h-14 min-w-0 flex-1 items-center gap-3 border-b-2 transition-colors", focused ? "border-burnt" : "border-ink")}
+            className={cx(
+              "flex h-14 min-w-0 flex-1 items-center gap-2.5 rounded-[18px] bg-surface pl-4 pr-1.5 shadow-soft transition-shadow",
+              focused && "ring-2 ring-green",
+            )}
           >
-            <SearchIcon className="size-5 shrink-0 text-ink" aria-hidden />
+            <SearchIcon className="size-5 shrink-0 text-green" aria-hidden />
             <input
               ref={input}
               type="search"
@@ -137,28 +143,43 @@ export default function SearchPage() {
               }}
               onFocus={() => setFocused(true)}
               onBlur={() => setTimeout(() => setFocused(false), 150)}
-              placeholder="Jollof, suya, a vendor"
-              aria-label="Search dishes, vendors or categories"
+              placeholder="Meals, vendors or categories"
+              aria-label="Search meals, vendors or categories"
               enterKeyHint="search"
-              className="h-full min-w-0 flex-1 bg-transparent font-[family-name:var(--font-display)] text-[20px] font-semibold tracking-[-0.01em] text-ink outline-none placeholder:font-medium placeholder:text-muted focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden"
+              className="t-body h-full min-w-0 flex-1 bg-transparent text-[16px] text-ink outline-none placeholder:text-muted focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden"
             />
             {q && (
-              <button type="button" onClick={() => setQ("")} aria-label="Clear search text" className="grid size-10 shrink-0 place-items-center rounded-[6px] text-muted-ink hover:bg-board/60">
-                <X className="size-5" />
+              <button type="button" onClick={() => setQ("")} aria-label="Clear search text" className="grid size-10 shrink-0 place-items-center rounded-full text-muted-ink hover:bg-cream">
+                <X className="size-[18px]" />
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setSheet(true)}
+              aria-label={`Filters and sorting${filterCount ? `, ${filterCount} on` : ""}`}
+              className={cx("relative grid size-11 shrink-0 place-items-center rounded-[14px] transition-colors", filterCount ? "bg-green text-white" : "bg-sage text-green hover:bg-sage/70")}
+            >
+              <SlidersHorizontal className="size-5" />
+              {filterCount > 0 && (
+                <span className="tabular absolute -right-1 -top-1 grid size-5 place-items-center rounded-full bg-orange-strong text-[11px] font-bold text-white ring-2 ring-surface">{filterCount}</span>
+              )}
+            </button>
           </form>
-          <button
-            onClick={() => setSheet(true)}
-            aria-label={`Filters and sorting${filterCount ? `, ${filterCount} on` : ""}`}
-            className={cx("relative grid size-12 shrink-0 place-items-center rounded-[6px] transition-colors", filterCount ? "bg-green text-white" : "text-ink ring-[1.5px] ring-inset ring-ink/70 hover:bg-board/60")}
-          >
-            <SlidersHorizontal className="size-5" />
-            {filterCount > 0 && <span className="tabular absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-orange-strong text-[11px] font-bold text-white">{filterCount}</span>}
-          </button>
+          {(focused || q) && (
+            <button
+              onClick={() => {
+                setQ("");
+                setFocused(false);
+                input.current?.blur();
+              }}
+              className="t-button h-11 shrink-0 px-1 text-green"
+            >
+              Cancel
+            </button>
+          )}
 
           {focused && suggestions.length > 0 && (
-            <ul role="listbox" aria-label="Suggestions" className="animate-fade absolute inset-x-0 top-[calc(100%+4px)] z-30 rounded-[6px] border-[1.5px] border-ink bg-cream py-1">
+            <ul role="listbox" aria-label="Suggestions" className="animate-fade absolute inset-x-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-[18px] bg-surface py-1.5 shadow-float">
               {suggestions.map((s) => (
                 <li key={s.kind + s.id}>
                   <button
@@ -174,9 +195,10 @@ export default function SearchPage() {
                         input.current?.blur();
                       } else commit(s.label);
                     }}
-                    className="flex min-h-12 w-full items-center gap-3 px-4 text-left text-[15px] text-ink hover:bg-board/60"
+                    className="t-body flex min-h-12 w-full items-center gap-3 px-4 text-left text-[15px] text-ink hover:bg-cream"
                   >
-                    <span className="flex-1 truncate font-semibold">{s.label}</span>
+                    {s.kind === "vendor" ? <Store className="size-4 text-green" aria-hidden /> : <SearchIcon className="size-4 text-muted" aria-hidden />}
+                    <span className="flex-1 truncate">{s.label}</span>
                     <span className="t-support text-muted-ink">{s.kind === "vendor" ? "Vendor" : "Dish"}</span>
                   </button>
                 </li>
@@ -187,26 +209,24 @@ export default function SearchPage() {
       </div>
 
       {catalog.state.status === "error" ? (
-        <ErrorState message={catalog.state.message} onRetry={catalog.retry} />
+        <div className="px-5 md:px-0">
+          <ErrorState message={catalog.state.message} onRetry={catalog.retry} />
+        </div>
       ) : browsing ? (
-        <div className="mt-6 flex flex-col gap-10">
+        <div className="flex flex-col gap-8 px-5 md:px-0">
           {state.recentSearches.length > 0 && (
-            <section aria-labelledby="recent-h">
-              <BoardHeading
-                id="recent-h"
-                action={
-                  <button onClick={() => dispatch({ type: "clearSearches" })} className="t-button pb-0.5 text-green">
-                    Clear
-                  </button>
-                }
-              >
-                Recent
-              </BoardHeading>
-              <ul>
+            <section aria-labelledby="recent-h" className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <h2 id="recent-h" className="t-section text-ink">Recent</h2>
+                <button onClick={() => dispatch({ type: "clearSearches" })} className="t-button min-h-11 px-1 text-green">
+                  Clear
+                </button>
+              </div>
+              <ul className="flex flex-col">
                 {state.recentSearches.map((t) => (
                   <li key={t}>
-                    <button onClick={() => commit(t)} className="flex min-h-12 w-full items-center gap-3 border-b border-line text-left text-[16px] text-ink">
-                      <Clock className="size-4 text-muted-ink" aria-hidden /> {t}
+                    <button onClick={() => commit(t)} className="t-body flex min-h-12 w-full items-center gap-3 border-b border-line text-left text-[15px] text-ink">
+                      <Clock className="size-4 text-muted" aria-hidden /> {t}
                     </button>
                   </li>
                 ))}
@@ -214,77 +234,84 @@ export default function SearchPage() {
             </section>
           )}
 
-          <section aria-labelledby="popular-h">
-            <BoardHeading id="popular-h">Most ordered</BoardHeading>
-            <ol>
+          <section aria-labelledby="popular-h" className="flex flex-col gap-3">
+            <h2 id="popular-h" className="t-section text-ink">Popular dishes</h2>
+            <div className="flex flex-wrap gap-2">
               {popular.map((m) => (
-                <li key={m.id}>
-                  <button onClick={() => commit(m.name)} className="flex min-h-14 w-full items-center justify-between gap-3 border-b border-dashed border-leader text-left">
-                    <span className="t-card text-ink">{m.name}</span>
-                    <span className="t-support shrink-0 text-muted-ink">{m.ratingCount} reviews</span>
-                  </button>
-                </li>
+                <button key={m.id} onClick={() => commit(m.name)} className="t-button inline-flex h-10 items-center gap-1.5 rounded-full bg-surface px-4 text-green shadow-[inset_0_0_0_1.5px_var(--color-line)] hover:bg-sage/50">
+                  <TrendingUp className="size-4 text-orange-strong" aria-hidden />
+                  {m.name}
+                </button>
               ))}
-            </ol>
+            </div>
+          </section>
+
+          <section aria-labelledby="cat-h" className="flex flex-col gap-3">
+            <h2 id="cat-h" className="t-section text-ink">Browse by category</h2>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+              {data
+                ? data.categories.map((c) => {
+                    const dish = data.menu.find((m) => m.category === c.id && m.bestSeller) ?? data.menu.find((m) => m.category === c.id);
+                    const count = data.menu.filter((m) => m.category === c.id).length;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={() => setFilters({ ...NO_FILTERS, cat: c.id })}
+                        className="group relative isolate flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-[var(--radius-card)] p-3 text-left"
+                      >
+                        {dish && (
+                          <span className="absolute inset-0 -z-10">
+                            <FoodImage photo={dish.photo} sizes="(min-width: 768px) 220px, 45vw" className="size-full [&_img]:transition-transform [&_img]:duration-300 group-hover:[&_img]:scale-105" />
+                          </span>
+                        )}
+                        <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-[#1e3a2b]/85 via-[#1e3a2b]/25 to-transparent" />
+                        <span className="t-card text-white">{c.label}</span>
+                        <span className="t-support text-white/90">
+                          {count} {count === 1 ? "dish" : "dishes"}
+                        </span>
+                      </button>
+                    );
+                  })
+                : [0, 1, 2, 3].map((i) => <div key={i} className="skeleton aspect-[4/3] rounded-[var(--radius-card)]" />)}
+            </div>
           </section>
 
           {data && (
-            <section aria-labelledby="cat-h">
-              <BoardHeading id="cat-h">By category</BoardHeading>
-              {/* Big type as the index. No icons, no photo tiles. */}
-              <ul className="grid grid-cols-2 gap-x-6">
-                {data.categories.map((c) => {
-                  const n = data.menu.filter((m) => m.category === c.id).length;
-                  return (
-                    <li key={c.id}>
-                      <button onClick={() => setFilters({ ...NO_FILTERS, cat: c.id })} className="group flex w-full items-baseline justify-between gap-2 border-b border-line py-3 text-left">
-                        <span className="font-[family-name:var(--font-display)] text-[22px] font-bold tracking-[-0.02em] text-ink group-hover:text-burnt-ink">{c.label}</span>
-                        <span className="t-support tabular text-muted-ink">{n}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          )}
-
-          {data && (
-            <section aria-labelledby="vendors-h">
-              <BoardHeading id="vendors-h">Kitchens near you</BoardHeading>
-              <ul>
+            <section aria-labelledby="vendors-h" className="flex flex-col gap-3">
+              <h2 id="vendors-h" className="t-section text-ink">Vendors near you</h2>
+              <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2">
                 {data.vendors.map((v) => (
-                  <li key={v.id}>
-                    <button onClick={() => setVendorId(v.id)} className="group flex min-h-16 w-full items-center gap-3 border-b border-line py-3 text-left">
-                      <span className="min-w-0 flex-1">
-                        <span className="t-card block text-ink group-hover:text-burnt-ink">{v.name}</span>
-                        <span className="t-support block text-muted-ink">
-                          {v.area} · {v.deliveryMinutes[0]}-{v.deliveryMinutes[1]} min · ★ {v.rating.toFixed(1)} · {data.menu.filter((m) => m.vendorId === v.id).length} dishes
-                        </span>
-                      </span>
-                      <ArrowUpRight className="size-5 shrink-0 text-muted-ink" aria-hidden />
-                    </button>
-                  </li>
+                  <VendorCard key={v.id} vendor={v} dishes={data.menu.filter((m) => m.vendorId === v.id).length} onClick={() => setVendorId(v.id)} />
                 ))}
-              </ul>
+              </div>
             </section>
           )}
         </div>
       ) : (
-        <div className="mt-5">
-          <div className="flex flex-wrap items-baseline justify-between gap-2 border-b-2 border-ink pb-2">
-            <p className="t-section text-ink" aria-live="polite">
+        <div className="flex flex-col gap-4 px-5 md:px-0">
+          {matchedVendors.length > 0 && !vendorId && (
+            <section aria-label="Matching vendors" className="flex flex-col gap-2.5">
+              {matchedVendors.map((v) => (
+                <VendorCard key={v.id} vendor={v} dishes={data!.menu.filter((m) => m.vendorId === v.id).length} onClick={() => { setVendorId(v.id); setQ(""); }} />
+              ))}
+            </section>
+          )}
+
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="t-card text-ink" aria-live="polite">
               {results.length} {results.length === 1 ? "dish" : "dishes"}
-              {term && <span className="font-[family-name:var(--font-body)] text-[15px] font-normal tracking-normal text-muted-ink"> for “{q.trim()}”</span>}
+              {term && <span className="font-normal text-muted-ink"> for “{q.trim()}”</span>}
             </p>
-            <button onClick={() => setSheet(true)} className="t-button text-green underline-offset-4 hover:underline">
+            <button onClick={() => setSheet(true)} className="t-button inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-green hover:bg-sage/50">
               {SORTS.find((s) => s[0] === filters.sort)![1]}
+              <SlidersHorizontal className="size-4" aria-hidden />
             </button>
           </div>
 
-          {active.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-2" aria-label="Active filters">
-              {active.map((f) => (
-                <button key={f.key} onClick={f.clear} className="inline-flex h-9 items-center gap-1.5 rounded-[6px] bg-green pl-3 pr-2 text-[13px] font-semibold text-white hover:bg-green-deep" aria-label={`Remove filter ${f.label}`}>
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap gap-2" aria-label="Active filters">
+              {activeFilters.map((f) => (
+                <button key={f.key} onClick={f.clear} className="t-button inline-flex h-9 items-center gap-1.5 rounded-full bg-green pl-3.5 pr-2.5 text-[13px] text-white hover:bg-green-deep" aria-label={`Remove filter ${f.label}`}>
                   {f.label} <X className="size-3.5" aria-hidden />
                 </button>
               ))}
@@ -292,11 +319,11 @@ export default function SearchPage() {
           )}
 
           {catalog.state.status === "loading" ? (
-            <div>{[0, 1, 2].map((i) => <DishRowSkeleton key={i} />)}</div>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{[0, 1, 2].map((i) => <FoodRowSkeleton key={i} />)}</div>
           ) : results.length === 0 ? (
             <Empty
-              title="Nothing matches."
-              body={term ? `We couldn't find “${q.trim()}”. Check the spelling, or try jollof, suya or amala.` : "No dish fits these filters. Remove one to see more."}
+              title="No dishes match"
+              body={term ? `We couldn't find “${q.trim()}”. Check the spelling, or try jollof, suya or amala.` : "Nothing fits these filters. Remove one to see more dishes."}
               action={
                 <Button variant="secondary" onClick={resetAll}>
                   Clear search and filters
@@ -304,7 +331,7 @@ export default function SearchPage() {
               }
             />
           ) : (
-            <ul>{results.map((m) => <DishRow key={m.id} item={m} />)}</ul>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">{results.map((m) => <FoodRow key={m.id} item={m} />)}</div>
           )}
         </div>
       )}
@@ -325,6 +352,30 @@ export default function SearchPage() {
   );
 }
 
+function VendorCard({ vendor, dishes, onClick }: { vendor: Vendor; dishes: number; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="flex min-h-[72px] items-center gap-3.5 rounded-[var(--radius-card)] bg-surface px-4 py-3 text-left shadow-soft transition-colors hover:bg-sage/30">
+      <Store className="size-6 shrink-0 text-green" aria-hidden />
+      <span className="min-w-0 flex-1">
+        <span className="t-card block truncate text-ink">{vendor.name}</span>
+        <span className="t-support flex flex-wrap items-center gap-x-3 text-muted-ink">
+          <span>{vendor.area}</span>
+          <span className="inline-flex items-center gap-1">
+            <Star className="size-3.5 fill-orange text-orange" aria-hidden />
+            <span className="font-medium text-ink">{vendor.rating.toFixed(1)}</span>
+          </span>
+          <span>
+            {vendor.deliveryMinutes[0]}-{vendor.deliveryMinutes[1]} min
+          </span>
+          <span>
+            {dishes} {dishes === 1 ? "dish" : "dishes"}
+          </span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
 function FilterSheet({
   value,
   categories,
@@ -340,21 +391,21 @@ function FilterSheet({
 }) {
   const [f, setF] = useState(value);
   const n = count(f);
-  const group = <K extends keyof Filters>(title: string, key: K, options: [Filters[K], string][]) => (
+  const group = <K extends keyof Filters>(title: string, key: K, options: [Filters[K], string][], icons?: boolean) => (
     <fieldset className="flex flex-col">
       <legend className="t-card mb-2.5 text-ink">{title}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map(([v, l]) => (
-          <Choice key={String(v)} active={f[key] === v} onClick={() => setF({ ...f, [key]: v })}>
+          <Chip key={String(v)} active={f[key] === v} onClick={() => setF({ ...f, [key]: v })} icon={icons ? CATEGORY_ICONS[v as CategoryId | "all"] : undefined}>
             {l}
-          </Choice>
+          </Chip>
         ))}
       </div>
     </fieldset>
   );
   return (
     <Sheet
-      title="Filter and sort"
+      title="Filters"
       onClose={onClose}
       footer={
         <div className="flex gap-3">
@@ -367,9 +418,9 @@ function FilterSheet({
         </div>
       }
     >
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 pt-1">
         {group("Sort by", "sort", SORTS)}
-        {group("Category", "cat", [["all", "All"], ...categories.map((c) => [c.id, c.label] as [CategoryId, string])])}
+        {group("Category", "cat", [["all", "All"], ...categories.map((c) => [c.id, c.label] as [CategoryId, string])], true)}
         {group("Price", "price", PRICES)}
         {group("Vendor rating", "minRating", [[0, "Any"], [4, "4.0 and up"], [4.5, "4.5 and up"]])}
         {group("Delivery time", "maxMinutes", [[0, "Any time"], [30, "Under 30 min"], [45, "Under 45 min"]])}

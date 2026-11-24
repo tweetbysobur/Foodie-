@@ -19,7 +19,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+148px)] z-50 flex justify-center px-4 md:bottom-auto md:top-20 md:justify-end md:px-8">
         {toast && (
-          <div key={toast.id} className="animate-fade flex w-full max-w-md items-center gap-3 rounded-[6px] bg-cream px-4 py-3.5 text-[15px] font-semibold text-ink ring-[1.5px] ring-ink">
+          <div key={toast.id} className="animate-fade flex w-full max-w-md items-center gap-3 t-card rounded-2xl bg-surface px-4 py-3.5 text-[15px] text-ink shadow-float ring-1 ring-line">
             {toast.tone === "success" ? <CircleCheck className="size-5 shrink-0 text-green" /> : <TriangleAlert className="size-5 shrink-0 text-danger" />}
             {toast.message}
           </div>

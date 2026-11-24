@@ -4,8 +4,7 @@
   Foodie design tokens.
   Contrast measured against WCAG AA (4.5:1 for text under 18.66px bold):
   - orange #FF7138 is 2.74:1 with white: accent only (icons, badges, art).
-  - orange-strong #CF4510 carries white text (4.65:1): buttons, active chips.
-  - burnt #D94B18 with white is 4.23:1: promo surfaces with text 19px bold or larger only.
+  - orange-strong #CF4510 carries white text (4.65:1): buttons, active chips, banner.
   - secondary #718477 is 3.67:1 on cream: icons and large text only.
     Small secondary text uses muted-ink #5F7266 (4.74:1 on cream, 5.14:1 on white).
   - ink #354D3C on cream 8.50:1. Green #205C46 with white 7.83:1.
@@ -17,7 +16,8 @@
   --color-orange: #ff7138;
   --color-orange-strong: #cf4510;
   --color-orange-press: #b93d0e;
-  --color-burnt: #d94b18; /* promo surfaces: white on it is 4.23:1, so large bold text only */
+  --color-burnt: #d94b18;
+  --color-promo: #3b2419; /* promo banner ground: warm dark brown, never black */
   --color-cream: #fff4e8;
   --color-surface: #ffffff;
   --color-sage: #ddebdd;
@@ -29,76 +29,69 @@
   --color-danger: #b4381a;
   --color-danger-soft: #fbe4dc;
 
-  --font-sans: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
-  --font-body: var(--font-dm), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-bricolage), var(--font-dm), ui-sans-serif, sans-serif;
-  --font-wordmark: var(--font-bricolage), ui-sans-serif, sans-serif;
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-wordmark: var(--font-outfit), ui-sans-serif, sans-serif;
 
-  /* Buka board: square-ish, printed, never bubbly */
-  --radius-card: 6px;
-  --radius-tile: 6px;
-  --color-leader: #b9ab99;
-  --color-burnt-ink: #b93d0e; /* burnt orange as text on cream: 5.18:1 */
-  --color-board: #e8ddcf; /* hover and pressed fills only: muted text on it is 3.84:1, so no small text */
+  --radius-card: 20px;
+  --radius-tile: 16px;
 
   --shadow-soft: 0 6px 20px rgb(53 77 60 / 0.08);
   --shadow-float: 0 10px 30px rgb(53 77 60 / 0.16);
 }
 
 /*
-  Type scale. Bricolage Grotesque: wordmark, headings, dish names, prices (the menu board voice).
-  DM Sans: everything you read or press (body, labels, buttons, navigation).
+  Type scale: Outfit throughout, compact like the reference Home screen.
   Letter spacing has three values only: headings -0.01em, uppercase labels +0.06em, the rest 0.
 */
 @utility t-display {
-  font-family: var(--font-display);
-  font-size: 44px;
-  font-weight: 800;
-  line-height: 0.98;
-  letter-spacing: -0.035em;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 @utility t-page {
-  font-family: var(--font-display);
-  font-size: 30px;
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.03em;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 @utility t-section {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
 }
 @utility t-card {
-  font-family: var(--font-display);
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 @utility t-body {
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 @utility t-support {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 @utility t-button {
   font-family: var(--font-sans);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
 }
 @utility t-price {
-  font-family: var(--font-display);
-  font-size: 17px;
+  font-family: var(--font-sans);
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.3;
   font-variant-numeric: tabular-nums;
@@ -106,15 +99,15 @@
 @utility t-nav {
   font-family: var(--font-sans);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.2;
 }
 @utility t-label {
   font-family: var(--font-sans);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   line-height: 1.3;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 @utility t-field {
@@ -267,12 +260,4 @@ select {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
-
-/* Dotted leader between a dish name and its price, like a printed menu board */
-.leader {
-  flex: 1;
-  min-width: 12px;
-  border-bottom: 2px dotted var(--color-leader);
-  transform: translateY(-5px);
 }

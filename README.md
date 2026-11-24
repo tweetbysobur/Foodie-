@@ -57,12 +57,12 @@ Swap each function body in `api.ts` for a Supabase query and keep the return typ
 
 From Wikimedia Commons under open licences. Credits show in the app under Profile, Photo credits, and in `src/lib/mock-data.ts`. Keep the credits if you keep the photos.
 
-## Design system: "Buka board"
+## Design system
 
-The look comes from Nigerian buka menu boards: dishes as printed lines with dotted leaders to the price, big tight headings, flat surfaces, rules instead of cards.
+Modelled on a reference Home screen chosen by the owner: compact, rounded, photo-led.
 
-- Type: Bricolage Grotesque for the wordmark, headings, dish names and prices. DM Sans for body, labels, buttons and navigation.
-- Shape: 6px corners at most, no card shadows, flat tab bar with a hairline.
-- Colour: forest green, burnt orange (#D94B18) for emphasis, cream ground. Contrast is measured and noted in `src/app/globals.css`.
-- Photos: only the seven strongest dish photos are used. Other dishes show as text rows. Replace or add photos in `public/food/` and `src/lib/mock-data.ts`.
-- Scale utilities (`t-display`, `t-page`, `t-section`, `t-card`, `t-body`, `t-support`, `t-button`, `t-price`, `t-nav`) live in `src/app/globals.css`; components and their states in `src/components/ui.tsx`.
+- Type: Outfit throughout. Compact scale (24px page titles, 18px sections, 15px names and prices, 11px caps labels) defined as utilities (`t-display`, `t-page`, `t-section`, `t-card`, `t-body`, `t-support`, `t-button`, `t-price`, `t-nav`, `t-label`) in `src/app/globals.css`.
+- Surfaces: white rounded cards with soft shadows, pill chips, floating pill tab bar with a filled orange active icon.
+- Colour: forest green, orange accents, warm dark brown promo banner, cream ground. Text is dark olive, never black. Contrast notes in `src/app/globals.css`.
+- Photos: all 18 dishes, from Wikimedia Commons, credited under Profile.
+- Components and their states live in `src/components/ui.tsx`.

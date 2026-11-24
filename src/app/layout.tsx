@@ -1,12 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 
-/** Display: wordmark, headings, dish names, prices. */
-const bricolage = Bricolage_Grotesque({ variable: "--font-bricolage", subsets: ["latin"], weight: ["600", "700", "800"] });
-/** Text: body, labels, buttons, navigation. */
-const dm = DM_Sans({ variable: "--font-dm", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
+/** Outfit: the one typeface, from headline to tab labels. */
+const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 
 export const metadata: Metadata = {
   title: "Foodie",
@@ -23,7 +21,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-NG" className={`${bricolage.variable} ${dm.variable}`}>
+    <html lang="en-NG" className={outfit.variable}>
       <body className="min-h-dvh">
         <Providers>{children}</Providers>
       </body>

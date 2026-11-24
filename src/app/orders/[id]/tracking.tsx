@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { use, useState } from "react";
-import { Check } from "lucide-react";
+import { Bike, Check, ChefHat, CircleCheck, Info, MapPin, PackageCheck, Phone, ReceiptText, Store, X } from "lucide-react";
 import { clockTime, naira, shortDate } from "@/lib/format";
 import { DEMO_TRACKING, STATUS_STEPS, VENDORS_CONNECTED, canCancel, orderStatus } from "@/lib/order-status";
 import { paymentLabel } from "@/lib/payments";
@@ -11,7 +11,9 @@ import { useCatalog } from "@/store/catalog";
 import { useToast } from "@/store/toast";
 import { formatAddress } from "@/components/shell";
 import { useReorder } from "@/components/reorder";
-import { BoardHeading, Button, Empty, PageHeader, Sheet, cx } from "@/components/ui";
+import { Button, Empty, FoodImage, PageHeader, Sheet, cx } from "@/components/ui";
+
+const STEP_ICONS = [ReceiptText, Store, ChefHat, PackageCheck, Bike, CircleCheck];
 
 export function Tracking({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -25,57 +27,51 @@ export function Tracking({ params }: { params: Promise<{ id: string }> }) {
 
   if (!order)
     return (
-      <main className="px-5 pt-[calc(env(safe-area-inset-top)+12px)] md:px-0 md:pt-8">
+      <main className="flex flex-col gap-6 px-5 pt-[calc(env(safe-area-inset-top)+16px)] md:px-0 md:pt-10">
         <PageHeader title="Order" />
-        <Empty title="Order not found." body="It may have been placed on another device." action={<Link href="/orders" className="t-button text-green underline">All orders</Link>} />
+        <Empty title="Order not found" body="It may have been placed on another device." action={<Link href="/orders" className="t-button text-green">All orders</Link>} />
       </main>
     );
 
   const v = orderStatus(order, now);
   const eta: [number, number] = [order.placedAt + order.etaMinutes[0] * 60000, order.placedAt + order.etaMinutes[1] * 60000];
-  const receipt: [string, string, ("green" | undefined)?][] = [
-    ["Food", naira(order.subtotal)],
-    ["Delivery", naira(order.deliveryFee)],
-    ...(order.discount ? ([[`${order.promoCode}, 10% off`, `-${naira(order.discount)}`, "green"]] as [string, string, "green"][]) : []),
-  ];
+  const card = "flex flex-col gap-4 rounded-[var(--radius-card)] bg-surface p-5 shadow-soft";
 
   return (
-    <main className="pb-nav px-5 pt-[calc(env(safe-area-inset-top)+12px)] md:px-0 md:pt-8">
+    <main className="pb-nav flex flex-col gap-6 px-5 pt-[calc(env(safe-area-inset-top)+16px)] md:px-0 md:pt-10">
       <PageHeader title={`Order ${order.reference}`} subtitle={`Placed ${shortDate(order.placedAt)}`} />
 
-      <div className="mt-6 flex flex-col gap-10 md:grid md:grid-cols-[1.1fr_1fr] md:items-start md:gap-14">
-        <div className="flex flex-col gap-6">
-          {/* The answer first: when */}
-          <section aria-labelledby="status-h" className={cx("rounded-[6px] p-5", v.kind === "cancelled" ? "ring-[1.5px] ring-inset ring-danger/60" : "bg-green text-cream")}>
-            <p className={cx("text-[15px] font-semibold", v.kind === "cancelled" ? "text-danger" : "text-cream/85")}>
-              {v.kind === "cancelled" ? `Cancelled ${shortDate(order.cancelledAt!)}` : v.kind === "delivered" ? "Delivered" : "Arriving between"}
+      <div className="flex flex-col gap-5 md:grid md:grid-cols-[1.1fr_1fr] md:items-start md:gap-10">
+        <section aria-labelledby="status-h" className={cx("flex flex-col gap-5 rounded-[24px] p-6", v.kind === "cancelled" ? "bg-surface shadow-soft" : "bg-green text-white shadow-float")}>
+          <div>
+            <p className={cx("t-support", v.kind === "cancelled" ? "text-muted-ink" : "text-white/80")}>
+              {v.kind === "cancelled" ? `Cancelled ${shortDate(order.cancelledAt!)}` : v.kind === "delivered" ? "Delivered" : "Estimated arrival"}
             </p>
-            <h2 id="status-h" className={cx("mt-1 font-[family-name:var(--font-display)] text-[48px] font-extrabold leading-none tracking-[-0.04em] tabular-nums", v.kind === "cancelled" ? "text-ink" : "text-cream")}>
-              {v.kind === "cancelled" ? "Cancelled." : v.kind === "delivered" ? "Enjoy." : `${clockTime(eta[0])}-${clockTime(eta[1])}`}
+            <h2 id="status-h" className={cx("t-display tabular", v.kind === "cancelled" ? "text-ink" : "text-white")}>
+              {v.kind === "cancelled" ? "Order cancelled" : v.kind === "delivered" ? "Enjoy your meal" : `${clockTime(eta[0])} - ${clockTime(eta[1])}`}
             </h2>
-            {v.kind === "cancelled" && <p className="t-body mt-2 text-muted-ink">You cancelled before the kitchen confirmed. You were not charged.</p>}
-          </section>
+            {v.kind === "active" && <p className="t-body mt-1 text-white/90">{v.step.detail}</p>}
+          </div>
 
           {v.kind !== "cancelled" && (
-            <ol aria-label="Order progress">
+            <ol className="flex flex-col rounded-[var(--radius-card)] bg-surface p-4 text-ink" aria-label="Order progress">
               {STATUS_STEPS.map((step, i) => {
+                const Icon = STEP_ICONS[i];
                 const done = i < v.index || v.kind === "delivered";
                 const current = i === v.index && v.kind === "active";
                 return (
-                  <li key={step.id} aria-current={current ? "step" : undefined} className="flex items-start gap-4 border-b border-dashed border-leader py-3.5">
+                  <li key={step.id} aria-current={current ? "step" : undefined} className="relative flex min-h-[54px] items-start gap-3.5">
+                    {i < STATUS_STEPS.length - 1 && <span aria-hidden className={cx("absolute left-[17px] top-9 h-[calc(100%-28px)] w-0.5 rounded-full", done ? "bg-green" : "bg-line")} />}
                     <span
                       className={cx(
-                        "mt-0.5 grid size-6 shrink-0 place-items-center rounded-full",
-                        done ? "bg-green text-white" : current ? "bg-burnt ring-[5px] ring-burnt/20" : "ring-[1.5px] ring-inset ring-ink/30",
+                        "relative z-10 grid size-9 shrink-0 place-items-center rounded-full transition-colors",
+                        done ? "bg-green text-white" : current ? "bg-orange-strong text-white ring-4 ring-peach" : "bg-cream text-muted",
                       )}
                     >
-                      {done && <Check className="size-3.5" strokeWidth={3} aria-hidden />}
+                      {done ? <Check className="size-4" strokeWidth={3} aria-hidden /> : <Icon className="size-4" aria-hidden />}
                     </span>
-                    <span className="min-w-0 flex-1">
-                      <span className={cx("block font-[family-name:var(--font-display)] tracking-[-0.01em]", current ? "text-[20px] font-extrabold text-ink" : done ? "text-[17px] font-bold text-ink" : "text-[17px] font-semibold text-muted-ink")}>
-                        {step.label}
-                      </span>
-                      {current && <span className="t-support block text-muted-ink">{step.detail}</span>}
+                    <span className="pt-1.5">
+                      <span className={cx("block text-[15px]", current ? "font-bold text-ink" : done ? "font-semibold text-ink" : "font-medium text-muted-ink")}>{step.label}</span>
                       <span className="sr-only">{done ? "Completed" : current ? "In progress" : "Upcoming"}</span>
                     </span>
                   </li>
@@ -84,66 +80,90 @@ export function Tracking({ params }: { params: Promise<{ id: string }> }) {
             </ol>
           )}
 
+          {v.kind === "cancelled" && <p className="t-body text-muted-ink">You cancelled this order before the vendor confirmed it. You were not charged.</p>}
+
           {v.kind === "active" && !DEMO_TRACKING && (
-            <p className="t-support border-l-[3px] border-burnt pl-3 text-ink">
-              {VENDORS_CONNECTED ? "Live updates appear here as the kitchen and rider progress." : "Live tracking starts once kitchens are connected to Foodie. Until then this order stays at its first step."}
+            <p className="t-support flex gap-2 text-white/90">
+              <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+              {VENDORS_CONNECTED ? "Live updates appear here as the vendor and rider progress." : "Live tracking starts once vendors are connected to Foodie. This order stays at its first step until then."}
             </p>
           )}
-          {DEMO_TRACKING && v.kind !== "cancelled" && <p className="t-support border-l-[3px] border-burnt pl-3 text-ink">Demo mode: status moves on a timer, not from a real kitchen.</p>}
-        </div>
+          {DEMO_TRACKING && v.kind !== "cancelled" && (
+            <p className="t-support flex gap-2 text-white/90">
+              <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
+              Demo mode: status moves on a timer, not from a real vendor.
+            </p>
+          )}
+        </section>
 
-        <div className="flex flex-col gap-10">
-          <section aria-labelledby="items-h">
-            <BoardHeading id="items-h">Your food</BoardHeading>
-            <ul>
-              {order.lines.map((l, i) => (
-                <li key={i} className="border-b border-dashed border-leader py-3">
-                  <span className="flex items-baseline gap-2 text-[16px] text-ink">
-                    <span className="min-w-0 truncate font-semibold">
-                      {l.qty}x {l.name}
+        <div className="flex flex-col gap-5">
+          <section className={card} aria-labelledby="items-h">
+            <h2 id="items-h" className="t-section text-[18px] text-ink">
+              Your food
+            </h2>
+            <ul className="flex flex-col gap-3">
+              {order.lines.map((l, i) => {
+                const item = catalog.items.get(l.itemId);
+                return (
+                  <li key={i} className="flex items-center gap-3">
+                    {item && <FoodImage photo={item.photo} sizes="56px" className="size-14 shrink-0 rounded-[14px]" />}
+                    <span className="min-w-0 flex-1">
+                      <span className="t-card block truncate text-[15px] text-ink">
+                        {l.qty}x {l.name}
+                      </span>
+                      <span className="t-support block truncate text-muted-ink">
+                        {catalog.vendors.get(l.vendorId)?.name}
+                        {l.optionLabels.length ? ` · ${l.optionLabels.join(", ")}` : ""}
+                      </span>
                     </span>
-                    <span aria-hidden className="leader" />
-                    <span className="tabular shrink-0">{naira(l.unitPrice * l.qty)}</span>
-                  </span>
-                  <span className="t-support block truncate text-muted-ink">
-                    {catalog.vendors.get(l.vendorId)?.name}
-                    {l.optionLabels.length ? ` · ${l.optionLabels.join(", ")}` : ""}
-                  </span>
-                </li>
-              ))}
+                    <span className="t-body tabular text-[15px] text-ink">{naira(l.unitPrice * l.qty)}</span>
+                  </li>
+                );
+              })}
             </ul>
-            <dl className="mt-3 flex flex-col gap-2">
-              {receipt.map(([k, val, tone]) => (
-                <div key={k} className={cx("flex items-baseline gap-2 text-[15px]", tone === "green" ? "text-green" : "text-ink")}>
-                  <dt>{k}</dt>
-                  <span aria-hidden className="leader" />
-                  <dd className="tabular">{val}</dd>
+            <dl className="flex flex-col gap-2 border-t border-line pt-3.5">
+              {(
+                [
+                  ["Food subtotal", naira(order.subtotal)],
+                  ["Delivery", naira(order.deliveryFee)],
+                  ...(order.discount ? [[`Discount (${order.promoCode})`, `-${naira(order.discount)}`]] : []),
+                ] as [string, string][]
+              ).map(([k, val]) => (
+                <div key={k} className="t-body flex justify-between text-[15px]">
+                  <dt className="text-muted-ink">{k}</dt>
+                  <dd className="tabular text-ink">{val}</dd>
                 </div>
               ))}
-              <div className="mt-1 flex items-baseline justify-between border-t-2 border-ink pt-3">
-                <dt className="t-card text-ink">{v.kind === "cancelled" ? "Total (not charged)" : "Pay on delivery"}</dt>
-                <dd className="font-[family-name:var(--font-display)] text-[30px] font-extrabold tracking-[-0.03em] tabular-nums text-ink">{naira(order.total)}</dd>
+              <div className="flex items-baseline justify-between pt-1">
+                <dt className="t-card text-ink">{v.kind === "cancelled" ? "Total (not charged)" : "Total, pay on delivery"}</dt>
+                <dd className="t-price text-[20px] text-ink">{naira(order.total)}</dd>
               </div>
             </dl>
           </section>
 
-          <section aria-labelledby="del-h">
-            <BoardHeading id="del-h">Delivery</BoardHeading>
-            <dl className="text-[15px]">
-              {(
-                [
-                  ["To", formatAddress(order.address) + (order.contact.instructions ? `. ${order.contact.instructions}` : "")],
-                  ["From", order.vendorIds.map((vid) => catalog.vendors.get(vid)?.name).join(", ")],
-                  ["Contact", `${order.contact.name}, ${order.contact.phone}`],
-                  ["Payment", paymentLabel(order.paymentMethod)],
-                ] as [string, string][]
-              ).map(([k, val]) => (
-                <div key={k} className="flex gap-4 border-b border-line py-3">
-                  <dt className="w-20 shrink-0 text-muted-ink">{k}</dt>
-                  <dd className="min-w-0 text-ink">{val}</dd>
-                </div>
-              ))}
-            </dl>
+          <section className={card} aria-labelledby="del-h">
+            <h2 id="del-h" className="t-section text-[18px] text-ink">
+              Delivery
+            </h2>
+            <ul className="flex flex-col gap-3.5">
+              <li className="flex gap-3">
+                <MapPin className="mt-0.5 size-5 shrink-0 text-orange-strong" aria-hidden />
+                <span className="t-body text-[15px] text-ink">
+                  {formatAddress(order.address)}
+                  {order.contact.instructions && <span className="t-support block text-muted-ink">{order.contact.instructions}</span>}
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <Store className="mt-0.5 size-5 shrink-0 text-green" aria-hidden />
+                <span className="t-body text-[15px] text-ink">{order.vendorIds.map((vid) => catalog.vendors.get(vid)?.name).join(", ")}</span>
+              </li>
+              <li className="flex gap-3">
+                <Phone className="mt-0.5 size-5 shrink-0 text-green" aria-hidden />
+                <span className="t-body text-[15px] text-ink">
+                  {order.contact.name}, {order.contact.phone} · {paymentLabel(order.paymentMethod)}
+                </span>
+              </li>
+            </ul>
           </section>
 
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -152,7 +172,7 @@ export function Tracking({ params }: { params: Promise<{ id: string }> }) {
             </Button>
             {canCancel(v) && (
               <Button variant="danger" size="lg" className="flex-1" onClick={() => setConfirmCancel(true)}>
-                Cancel order
+                <X className="size-4" /> Cancel order
               </Button>
             )}
           </div>
@@ -181,7 +201,7 @@ export function Tracking({ params }: { params: Promise<{ id: string }> }) {
             </div>
           }
         >
-          <p className="t-body text-[15px] text-muted-ink">You can cancel until the kitchen confirms. Nothing has been charged.</p>
+          <p className="t-body text-[15px] text-muted-ink">You can cancel until the vendor confirms. Nothing has been charged.</p>
         </Sheet>
       )}
     </main>

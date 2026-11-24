@@ -2,8 +2,7 @@ import type { Category, MenuItem, Vendor } from "./types";
 
 /**
  * Sample data for the prototype. Vendors are fictional, prices are typical for Abeokuta,
- * ratings and prep times are illustrative. Only dishes with a strong photo carry one;
- * the rest show as text. Photos come from Wikimedia Commons (credits below).
+ * ratings and prep times are illustrative. Photos come from Wikimedia Commons (credits below).
  * Generated from the dish list; replace with Supabase rows (see lib/api.ts).
  */
 export const CATEGORIES: Category[] = [
@@ -487,6 +486,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 187,
     "available": true,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/efo-riro.jpg",
+      "alt": "Efo riro vegetable stew",
+      "credit": {
+        "author": "Bukky658",
+        "licence": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Efo_riro.jpg"
+      }
+    },
     "options": [
       {
         "id": "swallow",
@@ -551,6 +559,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 143,
     "available": true,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/goat-pepper-soup.jpg",
+      "alt": "Goat meat pepper soup",
+      "credit": {
+        "author": "Nancy Nwachukwu",
+        "licence": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Goat_meat_pepper_soup_served_with_bread.jpg"
+      }
+    },
     "options": [
       {
         "id": "side",
@@ -641,6 +658,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 268,
     "available": true,
     "bestSeller": true,
+    "photo": {
+      "src": "/food/grilled-chicken.jpg",
+      "alt": "Grilled chicken",
+      "credit": {
+        "author": "Fatimah Bello",
+        "licence": "CC0",
+        "url": "https://commons.wikimedia.org/wiki/File:Grilled_chicken_meat.jpg"
+      }
+    },
     "options": [
       {
         "id": "side",
@@ -678,6 +704,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 164,
     "available": true,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/asun.jpg",
+      "alt": "Peppered goat meat",
+      "credit": {
+        "author": "Edriiic",
+        "licence": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Goat_meat_Asun.jpg"
+      }
+    },
     "options": []
   },
   {
@@ -692,6 +727,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 389,
     "available": true,
     "bestSeller": true,
+    "photo": {
+      "src": "/food/chicken-shawarma.jpg",
+      "alt": "Chicken shawarma wrap cut open",
+      "credit": {
+        "author": "Zebaarts",
+        "licence": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Chicken_Shawarma.jpg"
+      }
+    },
     "options": [
       {
         "id": "size",
@@ -746,6 +790,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 230,
     "available": true,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/puff-puff.jpg",
+      "alt": "A bowl of puff-puff",
+      "credit": {
+        "author": "Halima Waziri",
+        "licence": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Puff_Puff.jpg"
+      }
+    },
     "options": []
   },
   {
@@ -760,6 +813,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 97,
     "available": true,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/chin-chin.jpg",
+      "alt": "A bowl of chin chin",
+      "credit": {
+        "author": "ChildofMidnight at English Wikipedia",
+        "licence": "CC BY 3.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Chin-chin.jpg"
+      }
+    },
     "options": []
   },
   {
@@ -797,6 +859,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 134,
     "available": true,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/chapman.jpg",
+      "alt": "A glass of Chapman with fruit",
+      "credit": {
+        "author": "secretlondon123",
+        "licence": "CC BY-SA 2.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Chapman_drink.jpg"
+      }
+    },
     "options": [
       {
         "id": "size",
@@ -829,6 +900,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 176,
     "available": true,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/zobo.jpg",
+      "alt": "Zobo drink",
+      "credit": {
+        "author": "Lyndadelz",
+        "licence": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Zobo_drink.jpg"
+      }
+    },
     "options": [
       {
         "id": "size",
@@ -861,6 +941,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 88,
     "available": false,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/kunu.jpg",
+      "alt": "Kunu drink in a cup",
+      "credit": {
+        "author": "Agan56",
+        "licence": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Kunu.jpg"
+      }
+    },
     "options": []
   },
   {
@@ -875,6 +964,15 @@ export const MENU: MenuItem[] = [
     "ratingCount": 102,
     "available": true,
     "bestSeller": false,
+    "photo": {
+      "src": "/food/fruit-salad.jpg",
+      "alt": "A bowl of fruit salad",
+      "credit": {
+        "author": "Halima Waziri",
+        "licence": "CC BY-SA 4.0",
+        "url": "https://commons.wikimedia.org/wiki/File:Fruit_salad_with_ice.jpg"
+      }
+    },
     "options": [
       {
         "id": "extras",
