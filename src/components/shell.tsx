@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { ArrowLeft, Check, Heart, House, MapPin, Pencil, Plus, ReceiptText, Search, ShoppingBag, Trash2, UserRound } from "lucide-react";
 import { naira } from "@/lib/format";
 import { cartTotals } from "@/lib/pricing";
@@ -245,8 +245,28 @@ const AREAS = ["Alabata", "Kuto", "Ibara", "Oke-Ilewo", "Lafenwa", "Panseke"];
  * Step 1 asks a first name, step 2 where to deliver. Phone is asked at checkout.
  * Text in the white block uses orange-strong (#CF4510, 4.65:1 on white).
  */
+function Splash({ onDone }: { onDone: () => void }) {
+  // Moves on by itself after a short beat; a tap skips it.
+  useEffect(() => {
+    const t = setTimeout(onDone, 2600);
+    return () => clearTimeout(t);
+  }, [onDone]);
+  return (
+    <button
+      onClick={onDone}
+      aria-label="Welcome to Foodie. Tap to continue"
+      className="flex min-h-dvh w-full cursor-default flex-col items-center justify-center bg-green px-8 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] text-center"
+    >
+      <Image src="/brand/foodie-mark-ongreen.webp" alt="" width={148} height={148} priority className="animate-pop" />
+      <span className="animate-page mt-7 text-[44px] font-extrabold leading-none tracking-[-0.025em] text-white">Welcome</span>
+      <span className="animate-page mt-3 text-[19px] font-medium leading-snug text-peach">Foodie gat you covered</span>
+    </button>
+  );
+}
+
 function Welcome() {
   const { dispatch } = useStore();
+  const [splash, setSplash] = useState(true);
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [area, setArea] = useState("");
@@ -258,6 +278,8 @@ function Welcome() {
   const areaError = !chosenArea ? "Pick your area, or choose Other and type it." : "";
   const lineError = line.trim().length < 3 ? "Enter your house number and street." : "";
   const label = "text-[14px] font-semibold text-orange-strong";
+  const endSplash = useCallback(() => setSplash(false), []);
+  if (splash) return <Splash onDone={endSplash} />;
 
   return (
     <div className="min-h-dvh bg-green">
