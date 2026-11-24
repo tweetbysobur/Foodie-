@@ -237,8 +237,6 @@ export function AddressSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** Areas we know kitchens deliver to. Anything else can be typed. */
-const AREAS = ["Alabata", "Kuto", "Ibara", "Oke-Ilewo", "Lafenwa", "Panseke"];
 
 /**
  * First visit: green page, brand on top, one white block with the questions.
@@ -313,7 +311,7 @@ function Welcome() {
       <main className="animate-rise mx-auto flex w-full max-w-md flex-1 flex-col rounded-t-[36px] bg-surface px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-7">
         <form
           noValidate
-          className="flex flex-1 flex-col"
+          className="flex flex-col"
           onSubmit={(e) => {
             e.preventDefault();
             setTried(true);
@@ -337,21 +335,7 @@ function Welcome() {
             </p>
           ) : null}
 
-          <div className="mt-4 flex flex-wrap gap-2" aria-label="Quick pick an area">
-            {AREAS.map((a) => (
-              <button
-                type="button"
-                key={a}
-                onClick={() => setArea(a)}
-                aria-pressed={area === a}
-                className={cx("h-9 rounded-full px-3.5 text-[13px] font-medium transition-colors", area === a ? "bg-green text-white" : "bg-cream text-ink hover:bg-peach")}
-              >
-                {a}
-              </button>
-            ))}
-          </div>
-
-          <Button type="submit" size="lg" className="mt-auto w-full">
+          <Button type="submit" size="lg" className="mt-5 w-full">
             Start ordering
           </Button>
         </form>
