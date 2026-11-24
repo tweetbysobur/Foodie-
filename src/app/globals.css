@@ -151,9 +151,12 @@ select {
   font-size: 16px; /* stops iOS zoom on focus */
 }
 
-:focus-visible {
-  outline: 2.5px solid var(--color-green);
-  outline-offset: 2px;
+/* In the base layer so a component can replace the ring with its own focus state */
+@layer base {
+  :focus-visible {
+    outline: 2.5px solid var(--color-green);
+    outline-offset: 2px;
+  }
 }
 
 .no-scrollbar {
@@ -260,4 +263,9 @@ select {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+::selection {
+  background: var(--color-peach);
+  color: var(--color-ink);
 }

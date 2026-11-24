@@ -264,142 +264,97 @@ function Splash({ onDone }: { onDone: () => void }) {
   );
 }
 
+/** One row of the grouped form: label inside the row, typed text in orange. */
+function GroupRow({ id, label, value, onChange, error, ...rest }: { id: string; label: string; value: string; onChange: (v: string) => void; error?: string } & Omit<React.ComponentProps<"input">, "onChange" | "value">) {
+  return (
+    <label htmlFor={id} className="flex flex-col gap-0.5 px-4 py-3 transition-colors focus-within:bg-cream/60">
+      <span className={cx("text-[12px] font-semibold", error ? "text-danger" : "text-muted-ink")}>{label}</span>
+      <input
+        id={id}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-invalid={error ? true : undefined}
+        className="w-full bg-transparent text-[17px] font-semibold text-orange-strong caret-orange-strong outline-none placeholder:font-normal placeholder:text-muted focus-visible:outline-none"
+        {...rest}
+      />
+    </label>
+  );
+}
+
+/**
+ * Sign-up. Green page, a white panel rising from the bottom, one grouped box
+ * for name, area and street. Phone is asked at checkout.
+ */
 function Welcome() {
   const { dispatch } = useStore();
   const [splash, setSplash] = useState(true);
-  const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [area, setArea] = useState("");
-  const [otherArea, setOtherArea] = useState("");
   const [line, setLine] = useState("");
   const [tried, setTried] = useState(false);
-  const chosenArea = area === "Other" ? otherArea.trim() : area;
-  const nameError = !name.trim() ? "Tell us your first name." : "";
-  const areaError = !chosenArea ? "Pick your area, or choose Other and type it." : "";
-  const lineError = line.trim().length < 3 ? "Enter your house number and street." : "";
-  const label = "text-[14px] font-semibold text-orange-strong";
   const endSplash = useCallback(() => setSplash(false), []);
+  const errors = {
+    name: !name.trim() ? "Tell us your first name." : "",
+    area: !area.trim() ? "Tell us your area." : "",
+    line: line.trim().length < 3 ? "Add your house number and street." : "",
+  };
+  const missing = [errors.name && "first name", errors.area && "area", errors.line && "street"].filter(Boolean) as string[];
+  const firstError = missing.length === 0 ? "" : missing.length === 1 ? Object.values(errors).find(Boolean)! : `Add your ${missing.slice(0, -1).join(", ")} and ${missing.at(-1)}.`;
   if (splash) return <Splash onDone={endSplash} />;
 
   return (
-    <div className="min-h-dvh bg-green">
-      <main className="animate-page mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-[calc(env(safe-area-inset-bottom)+24px)] pt-[calc(env(safe-area-inset-top)+44px)]">
-        <div className="flex flex-col items-center text-center">
-          <Image src="/brand/foodie-mark-ongreen.webp" alt="" width={104} height={104} priority />
-          <span className="mt-2 text-[40px] font-extrabold leading-none tracking-[-0.02em] text-white">Foodie</span>
-          <p className="mt-2 max-w-[260px] text-[15px] leading-snug text-white/85">Nigerian food from kitchens near you, delivered.</p>
-        </div>
+    <div className="flex min-h-dvh flex-col bg-green">
+      <header className="animate-page mx-auto flex w-full max-w-md flex-col items-center px-6 pb-9 pt-[calc(env(safe-area-inset-top)+36px)] text-center">
+        <Image src="/brand/foodie-mark-ongreen.webp" alt="" width={84} height={84} priority />
+        <h1 className="mt-4 text-[30px] font-extrabold leading-tight tracking-[-0.02em] text-white">Let&rsquo;s get you set up</h1>
+        <p className="mt-1.5 text-[16px] text-peach">Tell us who you are and where to deliver.</p>
+      </header>
 
-        <section className="mt-8 rounded-[24px] bg-surface p-5" aria-labelledby="welcome-h">
-          <div role="progressbar" aria-label="Sign up progress" aria-valuemin={1} aria-valuemax={2} aria-valuenow={step} className="mb-5 flex gap-1.5">
-            {[1, 2].map((n) => (
-              <span key={n} className={cx("h-1.5 flex-1 rounded-full transition-colors duration-300", n <= step ? "bg-orange-strong" : "bg-peach")} />
+      <main className="animate-rise mx-auto flex w-full max-w-md flex-1 flex-col rounded-t-[36px] bg-surface px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-7">
+        <form
+          noValidate
+          className="flex flex-1 flex-col"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setTried(true);
+            if (firstError) return;
+            dispatch({
+              type: "signIn",
+              profile: { name: name.trim(), phone: "", photo: null, preferredPayment: "pay_on_delivery" },
+              address: { id: newId(), label: "Home", line: line.trim(), area: area.trim(), city: "Abeokuta" },
+            });
+          }}
+        >
+          <div className={cx("divide-y divide-line overflow-hidden rounded-[20px] ring-[1.5px] transition-colors", tried && firstError ? "ring-danger/60" : "ring-line focus-within:ring-orange-strong/50")}>
+            <GroupRow id="w-name" label="First name" value={name} onChange={setName} error={tried ? errors.name : ""} autoComplete="given-name" placeholder="Your first name" />
+            <GroupRow id="w-area" label="Area in Abeokuta" value={area} onChange={setArea} error={tried ? errors.area : ""} autoComplete="address-level3" placeholder="Alabata, Kuto, Ibara..." />
+            <GroupRow id="w-line" label="Street and house number" value={line} onChange={setLine} error={tried ? errors.line : ""} autoComplete="address-line1" placeholder="12 Olorunsogo Street" />
+          </div>
+
+          {tried && firstError ? (
+            <p role="alert" className="mt-2.5 px-1 text-[13px] text-danger">
+              {firstError}
+            </p>
+          ) : null}
+
+          <div className="mt-4 flex flex-wrap gap-2" aria-label="Quick pick an area">
+            {AREAS.map((a) => (
+              <button
+                type="button"
+                key={a}
+                onClick={() => setArea(a)}
+                aria-pressed={area === a}
+                className={cx("h-9 rounded-full px-3.5 text-[13px] font-medium transition-colors", area === a ? "bg-green text-white" : "bg-cream text-ink hover:bg-peach")}
+              >
+                {a}
+              </button>
             ))}
           </div>
 
-          {step === 1 ? (
-            <form
-              noValidate
-              className="flex flex-col gap-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setTried(true);
-                if (nameError) return;
-                setTried(false);
-                setStep(2);
-              }}
-            >
-              <h1 id="welcome-h" className="text-[20px] font-bold text-orange-strong">
-                What should we call you?
-              </h1>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="w-name" className={label}>
-                  First name
-                </label>
-                <TextInput id="w-name" error={tried ? nameError : ""} value={name} onChange={(e) => setName(e.target.value)} autoComplete="given-name" />
-                {tried && nameError && (
-                  <p id="w-name-error" role="alert" className="t-support text-danger">
-                    {nameError}
-                  </p>
-                )}
-              </div>
-              <Button type="submit" size="lg" className="mt-1">
-                Continue
-              </Button>
-            </form>
-          ) : (
-            <form
-              noValidate
-              className="flex flex-col gap-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setTried(true);
-                if (areaError || lineError) return;
-                dispatch({
-                  type: "signIn",
-                  profile: { name: name.trim(), phone: "", photo: null, preferredPayment: "pay_on_delivery" },
-                  address: { id: newId(), label: "Home", line: line.trim(), area: chosenArea, city: "Abeokuta" },
-                });
-              }}
-            >
-              <h1 id="welcome-h" className="text-[20px] font-bold text-orange-strong">
-                Where should we deliver, {name.trim().split(" ")[0]}?
-              </h1>
-              <fieldset className="flex flex-col gap-2">
-                <legend className={cx(label, "mb-2")}>Your area in Abeokuta</legend>
-                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Area">
-                  {[...AREAS, "Other"].map((a) => {
-                    const on = area === a;
-                    return (
-                      <button
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        key={a}
-                        onClick={() => setArea(a)}
-                        className={cx("h-10 rounded-full px-4 text-[14px] font-medium transition-colors", on ? "bg-green text-white" : "bg-cream text-ink hover:bg-peach")}
-                      >
-                        {a}
-                      </button>
-                    );
-                  })}
-                </div>
-                {area === "Other" && <TextInput id="w-area" aria-label="Type your area" value={otherArea} onChange={(e) => setOtherArea(e.target.value)} placeholder="Type your area" autoFocus />}
-                {tried && areaError && (
-                  <p role="alert" className="t-support text-danger">
-                    {areaError}
-                  </p>
-                )}
-              </fieldset>
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="w-line" className={label}>
-                  Street and house number
-                </label>
-                <TextInput id="w-line" error={tried ? lineError : ""} value={line} onChange={(e) => setLine(e.target.value)} autoComplete="address-line1" placeholder="12 Olorunsogo Street" />
-                {tried && lineError && (
-                  <p id="w-line-error" role="alert" className="t-support text-danger">
-                    {lineError}
-                  </p>
-                )}
-              </div>
-              <Button type="submit" size="lg" className="mt-1">
-                Start ordering
-              </Button>
-              <button
-                type="button"
-                onClick={() => {
-                  setTried(false);
-                  setStep(1);
-                }}
-                className="min-h-11 text-[14px] font-semibold text-orange-strong"
-              >
-                Back
-              </button>
-            </form>
-          )}
-        </section>
-
-        <p className="mt-auto pt-6 text-center text-[13px] text-white/75">No password needed. Your details stay on this phone.</p>
+          <Button type="submit" size="lg" className="mt-auto w-full">
+            Start ordering
+          </Button>
+        </form>
       </main>
     </div>
   );
