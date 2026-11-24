@@ -22,7 +22,7 @@ const NAV = [
 
 const isActive = (path: string, href: string) => (href === "/" ? path === "/" : path.startsWith(href));
 /** Screens with their own bottom action bar hide the tab bar. */
-const FULL_SCREEN = [/^\/cart/, /^\/checkout/, /^\/food\//];
+const FULL_SCREEN = [/^\/cart/, /^\/checkout/, /^\/food\//, /^\/orders\/[^/]+\/placed/];
 
 export const validPhone = (p: string) => /^(\+?234|0)[789][01]\d{8}$/.test(p.replace(/[\s-]/g, ""));
 
