@@ -288,7 +288,7 @@ function Welcome() {
             Nigerian food from kitchens near you.
           </h1>
           <p className="t-body mt-3 text-[15px] text-muted-ink">Jollof, suya, amala and more. Order in a few taps and pay when it arrives.</p>
-          <div className="mt-auto pt-8">
+          <div className="mt-auto pt-5">
             <Button size="lg" className="w-full" onClick={() => setStep("details")}>
               Get started
             </Button>
