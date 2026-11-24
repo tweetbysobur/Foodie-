@@ -274,7 +274,7 @@ function Welcome() {
           {[0, 1].map((col) => (
             <div key={col} className={cx("flex flex-col gap-2.5", col === 1 && "pt-9")}>
               {MOSAIC.filter((_, i) => i % 2 === col).map((m, i) => (
-                <div key={m.src} className={cx("relative overflow-hidden rounded-[22px] bg-peach", (col + i) % 2 === 0 ? "aspect-[3/4] max-h-[38vh] w-full [@media(max-height:700px)]:max-h-[24vh]" : "aspect-[4/5] max-h-[30vh] w-full [@media(max-height:700px)]:max-h-[18vh]")}>
+                <div key={m.src} className={cx("relative overflow-hidden rounded-[22px] bg-peach", (col + i) % 2 === 0 ? "aspect-[3/4] max-h-[34vh] w-full [@media(max-height:700px)]:max-h-[24vh]" : "aspect-[4/5] max-h-[27vh] w-full [@media(max-height:700px)]:max-h-[18vh]")}>
                   <Image src={m.src} alt={m.alt} fill priority sizes="200px" className="object-cover" />
                 </div>
               ))}
